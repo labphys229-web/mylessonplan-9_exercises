@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: Дослід Стюарта — Толмена</title>
+    <!-- Tailwind CSS для сучасного та адаптивного інтерфейсу -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons для гарних іконок -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Конфігурація та підключення MathJax для рендерингу LaTeX-формул -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Заголовок програми -->
+    <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white py-6 px-4 shadow-md">
+        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Дослід Стюарта — Толмена</h1>
+                <p class="text-blue-100 mt-1 text-sm md:text-base">Тест на перевірку знань про електронну природу струму в металах</p>
+            </div>
+            <div class="bg-white/10 px-4 py-2 rounded-lg text-xs md:text-sm backdrop-blur-sm border border-white/10">
+                <span class="font-semibold">Фізика 9-11 клас</span> • Контроль знань
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 py-8 flex-grow w-full flex flex-col gap-6">
+        
+        <!-- Розділ швидкої довідки (колапсна панель) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <button id="btn-toggle-theory" class="w-full py-4 px-6 text-left font-bold text-slate-750 hover:bg-slate-50 transition-colors flex justify-between items-center gap-2">
+                <span class="flex items-center gap-2 text-indigo-700">
+                    <i data-lucide="book-open" class="w-5 h-5"></i> 
+                    <span>Потрібна підказка? Коротко про дослід</span>
+                </span>
+                <i data-lucide="chevron-down" id="theory-arrow" class="w-5 h-5 text-slate-400 transition-transform duration-200"></i>
+            </button>
+            
+            <div id="theory-content" class="hidden border-t border-slate-150 p-6 bg-slate-50 text-slate-650 text-sm md:text-base leading-relaxed space-y-3">
+                <p>
+                    У 1916 році американські фізики Річард Стюарт та Річард Толмен експериментально довели, що 
+                    <strong>носіями електричного струму в металах є вільні електрони</strong>.
+                </p>
+                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg my-3 text-slate-700 text-sm">
+                    <strong>Суть явища:</strong> Якщо швидко обертати котушку з дротом навколо її осі, а потім різко зупинити, металева ґратка зупиниться миттєво. Проте вільні електрони через інерцію продовжуватимуть рух далі, створюючи короткочасний струм, який фіксує гальванометр.
+                </div>
+                <p>
+                    Вимірявши заряд $q$, опір кола $R$, довжину дроту $L$ та лінійну швидкість $v$ до гальмування, вчені розрахували питомий заряд носіїв:
+                </p>
+                <div class="text-center font-mono text-lg bg-white py-2 rounded-lg border border-slate-200 shadow-sm max-w-xs mx-auto my-3">
+                    $$\frac{e}{m} = \frac{q \cdot R}{L \cdot v}$$
+                </div>
+                <p class="text-xs text-slate-500">
+                    Значення питомого заряду збіглося з питомим зарядом вільного електрона, що довело електронну теорію провідності металів.
+                </p>
+            </div>
+        </div>
+
+        <!-- Головна картка тесту -->
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-6 md:p-8 flex flex-col justify-between min-h-[400px]">
+            
+            <!-- Заголовок і статус тесту -->
+            <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-6">
+                <h2 class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+                    <i data-lucide="check-square" class="text-blue-600 w-5 h-5"></i> 
+                    <span>Питання вікторини</span>
+                </h2>
+                <span id="question-counter-badge" class="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full">
+                    Питання <span id="current-question-num">1</span> з 5
+                </span>
+            </div>
+
+            <!-- Контейнер для активного тесту -->
+            <div id="quiz-container" class="flex-grow flex flex-col justify-between">
+                <div>
+                    <!-- Прогрес бар -->
+                    <div class="w-full bg-slate-100 rounded-full h-2 mb-6 overflow-hidden">
+                        <div id="quiz-progress" class="bg-blue-600 h-2 rounded-full transition-all duration-350" style="width: 20%"></div>
+                    </div>
+
+                    <!-- Текст запитання -->
+                    <h3 id="question-text" class="font-bold text-slate-900 mb-6 leading-snug text-base md:text-lg">Завантаження запитання...</h3>
+
+                    <!-- Варіанти відповідей -->
+                    <div id="answers-container" class="space-y-3.5 mb-6">
+                        <!-- Сюди рендеряться варіанти -->
+                    </div>
+                </div>
+
+                <!-- Контейнер пояснення та правильної відповіді -->
+                <div id="explanation-box" class="hidden p-4 rounded-xl mb-6 text-sm animate-fade-in transition-all">
+                    <div class="flex items-start gap-3">
+                        <span id="explanation-icon" class="mt-0.5 flex-shrink-0"></span>
+                        <div>
+                            <p id="explanation-title" class="font-bold mb-1"></p>
+                            <p id="explanation-text" class="text-slate-705 leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Кнопки дій знизу -->
+                <div class="flex justify-between items-center pt-4 border-t border-slate-100 mt-4">
+                    <button id="btn-restart" class="text-slate-400 hover:text-rose-600 text-xs font-semibold flex items-center gap-1 transition-colors">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Скинути тест
+                    </button>
+                    <button id="btn-next" disabled class="py-2.5 px-6 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-blue-700 transition-colors disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-1.5">
+                        <span>Далі</span> 
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Контейнер результатів (прихований під час тесту) -->
+            <div id="results-container" class="hidden text-center py-8 flex-grow flex flex-col justify-center items-center">
+                <div id="result-medal-container" class="p-5 bg-yellow-50 text-yellow-500 rounded-full mb-5 inline-block shadow-inner">
+                    <i data-lucide="award" class="w-16 h-16 animate-bounce"></i>
+                </div>
+                <h3 class="text-2xl font-black text-slate-900 mb-2">Тестування завершено!</h3>
+                <p class="text-slate-500 mb-5 text-sm md:text-base max-w-xs">Ви відповіли правильно на <span id="correct-count" class="font-extrabold text-blue-600 text-xl">0</span> з <span class="font-bold">5</span> запитань.</p>
+                
+                <div id="result-message" class="bg-slate-50 rounded-xl p-5 mb-8 text-sm text-slate-600 border border-slate-200 leading-relaxed max-w-md">
+                    <!-- Індивідуальне повідомлення -->
+                </div>
+
+                <button id="btn-test-again" class="py-3 px-8 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow-md transition-all flex items-center gap-2 text-sm sm:text-base active:scale-98">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Пройти тест ще раз
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Футер сайту -->
+    <footer class="bg-slate-800 text-slate-400 text-xs py-6 border-t border-slate-700 mt-auto">
+        <div class="max-w-3xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-3">
+            <p>© 2026 Інтерактивний фізичний кабінет. Навчальна розробка.</p>
+            <p>Питання відповідають шкільній програмі фізики за 9-11 класи.</p>
+        </div>
+    </footer>
+
+    <!-- JS Логіка для тесту -->
+    <script>
+        // Ініціалізація іконок Lucide
+        lucide.createIcons();
+
+        // --- ЛОГІКА ДОПОМІЖНОЇ ДОВІДКИ ---
+        const btnToggleTheory = document.getElementById('btn-toggle-theory');
+        const theoryContent = document.getElementById('theory-content');
+        const theoryArrow = document.getElementById('theory-arrow');
+
+        btnToggleTheory.addEventListener('click', () => {
+            const isHidden = theoryContent.classList.contains('hidden');
+            if (isHidden) {
+                theoryContent.classList.remove('hidden');
+                theoryArrow.style.transform = 'rotate(180deg)';
+                // Перерендерити формули MathJax після розгортання панелі
+                if (window.MathJax) {
+                    MathJax.typesetPromise([theoryContent]);
+                }
+            } else {
+                theoryContent.classList.add('hidden');
+                theoryArrow.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        // --- ДАНІ ТЕСТУ ---
+        const quizData = [
+            {
+                question: "Яке фізичне явище безпосередньо лежить в основі виникнення струму під час раптової зупинки котушки в досліді Стюарта — Толмена?",
+                answers: [
+                    "Електромагнітна індукція за законом Фарадея",
+                    "Інерція вільних електронів (носіїв заряду)",
+                    "Виділення теплоти за законом Джоуля-Ленца",
+                    "Виникнення вихрових струмів Фуко"
+                ],
+                correct: 1,
+                explanation: "Оскільки вільні електрони не закріплені жорстко у кристалічній ґратці, при різкій зупинці провідника вони продовжують рухатися вперед за інерцією, створюючи короткочасний струм."
+            },
+            {
+                question: "У якому напрямку відхиляється стрілка гальванометра відносно напрямку інерційного руху електронів при зупинці?",
+                answers: [
+                    "У напрямку, протилежному руху електронів, оскільки їхній заряд негативний",
+                    "У тому ж напрямку, куди летять електрони, бо це напрямок перенесення маси",
+                    "Стрілка не відхиляється взагалі, струм виникає лише в теорії",
+                    "Напрямок відхилення постійно змінюється випадковим чином"
+                ],
+                correct: 0,
+                explanation: "У фізиці напрямок струму умовно обрано від '+' до '-'. Оскільки електрони є негативно зарядженими частинками, їх інерційний рух вперед еквівалентний перенесенню заряду в протилежний бік, тому струм напрямлений назад."
+            },
+            {
+                question: "Які з перелічених величин необхідно було точно виміряти експериментаторам, щоб обчислити питомий заряд електрона за формулою досліду?",
+                answers: [
+                    "Роботу виходу електронів з металу та площу перерізу дроту",
+                    "Лише напругу джерела живлення та температуру котушки",
+                    "Сумарний заряд, опір кола, довжину дроту та лінійну швидкість до гальмування",
+                    "Магнітну проникність осердя котушки та силу тертя в підшипниках"
+                ],
+                correct: 2,
+                explanation: "Питомий заряд визначається за формулою: e/m = (q * R) / (L * v). Кожна з цих величин (заряд q, опір R, довжина L та лінійна швидкість v) є необхідною для обчислень."
+            },
+            {
+                question: "Як вплине заміна мідного дроту на залізний (з більшим питомим опором) на повний заряд, що протікає крізь гальванометр за інших однакових умов?",
+                answers: [
+                    "Заряд збільшиться, адже залізо краще намагнічується під час обертання",
+                    "Заряд зменшиться через вищий опір кола, що сильніше протидіє струму",
+                    "Заряд залишиться точно таким самим, бо маса електронів у залізі більша",
+                    "Струм узагалі не зможе виникнути у залізі за інерцією"
+                ],
+                correct: 1,
+                explanation: "Згідно з формулою досліду та законом Ома, сила струму та сумарний протікший заряд q є обернено пропорційними до опору кола R. Збільшення опору гасить інерційний імпульс струму швидше."
+            },
+            {
+                question: "Яке ключове значення мав дослід Стюарта — Толмена для розвитку класичної фізики?",
+                answers: [
+                    "Було відкрито явище надпровідності металів за високих температур",
+                    "Експериментально доведено електронну теорію провідності металів та виміряно питомий заряд електрона",
+                    "Розроблено перші безконтактні електродвигуни постійного струму",
+                    "Доведено хибність квантової теорії бувої речовини"
+                ],
+                correct: 1,
+                explanation: "Цей дослід блискуче підтвердив теоретичні припущення, що струм у металах обумовлений саме вільними електронами, а виміряне значення питомого заряду збіглося з даними вакуумних дослідів Дж. Дж. Томсона."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswer = null;
+
+        // --- DOM ЕЛЕМЕНТИ ---
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const currentQuestionNum = document.getElementById('current-question-num');
+        const quizProgress = document.getElementById('quiz-progress');
+        const btnNext = document.getElementById('btn-next');
+        const btnRestart = document.getElementById('btn-restart');
+        const questionCounterBadge = document.getElementById('question-counter-badge');
+        
+        const explanationBox = document.getElementById('explanation-box');
+        const explanationIcon = document.getElementById('explanation-icon');
+        const explanationTitle = document.getElementById('explanation-title');
+        const explanationText = document.getElementById('explanation-text');
+
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsContainer = document.getElementById('results-container');
+        const correctCount = document.getElementById('correct-count');
+        const resultMessage = document.getElementById('result-message');
+        const btnTestAgain = document.getElementById('btn-test-again');
+
+        // --- ЛОГІКА ТЕСТУВАННЯ ---
+        function loadQuestion() {
+            selectedAnswer = null;
+            btnNext.disabled = true;
+            btnNext.className = "py-2.5 px-6 bg-slate-200 text-slate-400 rounded-xl font-bold text-sm cursor-not-allowed flex items-center gap-1.5";
+            explanationBox.classList.add('hidden');
+
+            const q = quizData[currentQuestion];
+            currentQuestionNum.innerText = currentQuestion + 1;
+            quizProgress.style.width = `${((currentQuestion + 1) / quizData.length) * 100}%`;
+            questionText.innerText = q.question;
+
+            answersContainer.innerHTML = '';
+            q.answers.forEach((ans, idx) => {
+                const button = document.createElement('button');
+                button.className = "w-full text-left p-4 rounded-xl border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all text-sm md:text-base flex items-start gap-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500/40";
+                button.innerHTML = `
+                    <span class="w-6.5 h-6.5 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">${String.fromCharCode(65 + idx)}</span>
+                    <span class="text-slate-700 font-medium">${ans}</span>
+                `;
+                button.addEventListener('click', () => selectAnswer(idx));
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(index) {
+            if (selectedAnswer !== null) return; // заблокувати зміну відповіді
+            
+            selectedAnswer = index;
+            const q = quizData[currentQuestion];
+            const buttons = answersContainer.querySelectorAll('button');
+
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                const badge = btn.querySelector('span');
+                
+                if (idx === q.correct) {
+                    // Правильний варіант - зелений
+                    btn.className = "w-full text-left p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-900 transition-all text-sm md:text-base flex items-start gap-3.5";
+                    badge.className = "w-6.5 h-6.5 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5";
+                } else if (idx === index) {
+                    // Обраний неправильний варіант - червоний
+                    btn.className = "w-full text-left p-4 rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-900 transition-all text-sm md:text-base flex items-start gap-3.5";
+                    badge.className = "w-6.5 h-6.5 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5";
+                } else {
+                    // Інші варіанти бліднуть
+                    btn.className = "w-full text-left p-4 rounded-xl border border-slate-100 bg-white text-slate-400 opacity-60 transition-all text-sm md:text-base flex items-start gap-3.5";
+                }
+            });
+
+            // Відображення пояснення
+            explanationBox.classList.remove('hidden');
+            if (index === q.correct) {
+                score++;
+                explanationBox.className = "p-4 rounded-xl mb-6 text-sm animate-fade-in bg-emerald-50 border border-emerald-200 text-emerald-850";
+                explanationIcon.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>`;
+                explanationTitle.innerText = "Правильно!";
+                explanationTitle.className = "font-bold mb-1 text-emerald-800";
+            } else {
+                explanationBox.className = "p-4 rounded-xl mb-6 text-sm animate-fade-in bg-rose-50 border border-rose-200 text-rose-850";
+                explanationIcon.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5 text-rose-600"></i>`;
+                explanationTitle.innerText = "Неправильно";
+                explanationTitle.className = "font-bold mb-1 text-rose-800";
+            }
+            explanationText.innerText = q.explanation;
+            lucide.createIcons();
+
+            // Активувати кнопку переходу далі
+            btnNext.disabled = false;
+            btnNext.className = "py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-md transition-colors flex items-center gap-1.5 active:scale-98";
+        }
+
+        btnNext.addEventListener('click', () => {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        });
+
+        btnRestart.addEventListener('click', () => {
+            currentQuestion = 0;
+            score = 0;
+            loadQuestion();
+        });
+
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            questionCounterBadge.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            correctCount.innerText = score;
+
+            const medalContainer = document.getElementById('result-medal-container');
+            
+            if (score === 5) {
+                medalContainer.className = "p-5 bg-yellow-50 text-yellow-500 rounded-full mb-5 inline-block shadow-inner";
+                medalContainer.innerHTML = `<i data-lucide="trophy" class="w-16 h-16 text-yellow-500 animate-bounce"></i>`;
+                resultMessage.innerHTML = "<strong>Чудовий результат! 🎉</strong> Ви блискуче впоралися зі всіма завданнями й продемонстрували відмінні знання класичної електронної теорії провідності металів!";
+            } else if (score >= 3) {
+                medalContainer.className = "p-5 bg-slate-50 text-slate-500 rounded-full mb-5 inline-block shadow-inner";
+                medalContainer.innerHTML = `<i data-lucide="award" class="w-16 h-16 text-blue-500"></i>`;
+                resultMessage.innerHTML = "<strong>Гарний результат! 👍</strong> Ви добре розумієте природу руху вільних електронів за інерцією. Перечитайте довідку ще раз, щоб досягти ідеального результату!";
+            } else {
+                medalContainer.className = "p-5 bg-amber-50 text-amber-600 rounded-full mb-5 inline-block shadow-inner";
+                medalContainer.innerHTML = `<i data-lucide="help-circle" class="w-16 h-16 text-amber-500"></i>`;
+                resultMessage.innerHTML = "<strong>Спробуйте ще раз! 💪</strong> Справа лише в практиці. Скористайтеся нашою підказкою з теорії нагорі екрана й спробуйте заново.";
+            }
+            lucide.createIcons();
+        }
+
+        btnTestAgain.addEventListener('click', () => {
+            currentQuestion = 0;
+            score = 0;
+            resultsContainer.classList.add('hidden');
+            questionCounterBadge.classList.remove('hidden');
+            quizContainer.classList.remove('hidden');
+            loadQuestion();
+        });
+
+        // Перший запуск
+        loadQuestion();
+    </script>
+</body>
+</html>
