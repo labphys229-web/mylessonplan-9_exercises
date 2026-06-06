@@ -1,0 +1,742 @@
+
+code_artifact.html
+
+Сторінка
+1
+/
+1
+100%
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Електричний струм у металах - Інтерактивний тест</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.85);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-indigo-50 dark:from-slate-950 dark:to-indigo-950 min-h-screen text-slate-800 dark:text-slate-100 transition-colors duration-300">
+
+    <div class="max-w-5xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">Фізика • 8-9 клас</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-600 to-cyan-500 dark:from-indigo-400 dark:to-cyan-400 bg-clip-text text-transparent">
+                    Електричний струм у металах
+                </h1>
+                <p class="text-slate-500 dark:text-slate-400 text-sm md:text-base mt-1">
+                    Інтерактивний тренажер-тест для перевірки знань та візуалізації мікропроцесів у провідниках
+                </p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <!-- Theme Toggle -->
+                <button id="themeToggle" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-all">
+                    <i data-lucide="sun" class="hidden dark:block w-5 h-5"></i>
+                    <i data-lucide="moon" class="block dark:hidden w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Layout Split -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Side: Physics Simulation (Crucial Visual Aid) -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
+                <div class="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="atom" class="w-5 h-5 text-indigo-500 animate-spin-slow"></i>
+                            <h2 class="font-bold text-lg">Модель провідника</h2>
+                        </div>
+                        <span class="text-xs text-slate-400 dark:text-slate-500">Інтерактивна симуляція</span>
+                    </div>
+
+                    <!-- Canvas -->
+                    <div class="relative bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
+                        <canvas id="conductorCanvas" class="w-full h-48 block"></canvas>
+                        
+                        <!-- Flow indicator labels -->
+                        <div class="absolute inset-x-0 bottom-2 px-3 flex justify-between text-[10px] text-slate-400 pointer-events-none select-none">
+                            <span class="bg-blue-950/80 px-1.5 py-0.5 rounded border border-blue-900/50">(-) Полюс (Катод)</span>
+                            <span class="bg-red-950/80 px-1.5 py-0.5 rounded border border-red-900/50">(+) Полюс (Анод)</span>
+                        </div>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                            <div>
+                                <span class="text-sm font-semibold block">Електричне поле</span>
+                                <span class="text-xs text-slate-400" id="fieldStateText">Вимкнено (лише хаотичний рух)</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="fieldToggle" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850">
+                                <span class="w-3 h-3 rounded-full bg-red-500 shadow-sm shadow-red-500/50 inline-block animate-pulse"></span>
+                                <span>Позитивні йони (вузли)</span>
+                            </div>
+                            <div class="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850">
+                                <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400/50 inline-block"></span>
+                                <span>Вільні електрони (е-газ)</span>
+                            </div>
+                        </div>
+                        
+                        <p class="text-xs text-slate-400 dark:text-slate-500 leading-relaxed italic">
+                            *Зверніть увагу: за відсутності поля електрони рухаються хаотично. При ввімкненні поля виникає упорядковане зміщення (дрейф) до позитивного полюса.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Interactive Quiz -->
+            <div class="lg:col-span-7">
+                <div class="p-6 md:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col min-h-[480px]">
+                    
+                    <!-- Progress Bar & Stats -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex flex-col">
+                            <span class="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold">Питання</span>
+                            <span class="text-lg font-bold" id="quizProgressText">1 з 5</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Очки:</span>
+                            <span class="px-3 py-1 bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 font-bold rounded-lg border border-amber-100 dark:border-amber-900/50" id="scoreDisplay">00</span>
+                        </div>
+                    </div>
+
+                    <!-- Visual Progress Line -->
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full mb-8 overflow-hidden">
+                        <div id="quizProgressBar" class="bg-gradient-to-r from-indigo-500 to-cyan-400 h-full w-1/5 transition-all duration-300 rounded-full"></div>
+                    </div>
+
+                    <!-- Quiz Views Container -->
+                    <div class="flex-grow flex flex-col justify-between">
+                        <!-- Active Question Screen -->
+                        <div id="questionScreen" class="block">
+                            <h3 class="text-xl font-bold mb-6 text-slate-800 dark:text-slate-100 leading-snug" id="questionText">
+                                Завантаження запитання...
+                            </h3>
+
+                            <div class="flex flex-col gap-3" id="optionsContainer">
+                                <!-- Options will be rendered dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Quiz End Screen -->
+                        <div id="endScreen" class="hidden text-center py-8">
+                            <div class="inline-flex p-4 bg-emerald-50 dark:bg-emerald-950/50 rounded-full text-emerald-500 dark:text-emerald-400 mb-4 border border-emerald-100 dark:border-emerald-900/40">
+                                <i data-lucide="award" class="w-12 h-12"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-2">Тест завершено!</h3>
+                            <p class="text-slate-500 dark:text-slate-400 mb-6" id="finalScoreMessage">
+                                Вітаємо! Ви успішно пройшли тестування.
+                            </p>
+
+                            <!-- Score Card -->
+                            <div class="max-w-xs mx-auto bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-slate-800 p-4 rounded-xl mb-8">
+                                <div class="text-sm text-slate-400 mb-1">Ваш результат:</div>
+                                <div class="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400" id="finalScoreText">5 / 5</div>
+                                <div class="text-xs text-slate-400 mt-2" id="scorePercentage">100% успішності</div>
+                            </div>
+
+                            <button id="restartBtn" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-indigo-500/20 active:scale-95 flex items-center gap-2 mx-auto">
+                                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                                Спробувати знову
+                            </button>
+                        </div>
+
+                        <!-- Feedback Box (Dynamic after selection) -->
+                        <div id="feedbackBox" class="hidden mt-6 p-4 rounded-xl border transition-all duration-200">
+                            <div class="flex items-start gap-3">
+                                <span id="feedbackIcon" class="p-1 rounded-full text-white inline-flex mt-0.5"></span>
+                                <div>
+                                    <h4 class="font-bold text-sm" id="feedbackTitle">Правильно!</h4>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed" id="feedbackExplanation">
+                                        Пояснення правильної відповіді.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Button / Navigation -->
+                        <div class="mt-8 flex justify-end" id="actionBtnContainer">
+                            <button id="nextBtn" disabled class="px-6 py-3 bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 font-semibold rounded-xl cursor-not-allowed transition-all flex items-center gap-2">
+                                <span>Перевірити</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Educational Info Summary -->
+        <section class="mt-12 p-6 md:p-8 rounded-2xl border border-indigo-100 dark:border-indigo-950/60 bg-indigo-50/40 dark:bg-indigo-950/10">
+            <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                <i data-lucide="info" class="w-5 h-5 text-indigo-500"></i>
+                Короткий конспект теми
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-600 dark:text-slate-300">
+                <div class="space-y-2">
+                    <h4 class="font-semibold text-slate-800 dark:text-slate-200">1. Природа струму</h4>
+                    <p class="leading-relaxed text-xs">
+                        Електричний струм у металах — це впорядкований (напрямлений) рух вільних електронів. Самі позитивно заряджені йони залишаються коливатися у вузлах кристалічної ґратки.
+                    </p>
+                </div>
+                <div class="space-y-2">
+                    <h4 class="font-semibold text-slate-800 dark:text-slate-200">2. Вільні електрони</h4>
+                    <p class="leading-relaxed text-xs">
+                        Зовнішні (валентні) електрони атомів металу дуже слабо зв'язані зі своїми ядрами. Вони легко відриваються й хаотично рухаються між йонами, утворюючи так званий «електронний газ».
+                    </p>
+                </div>
+                <div class="space-y-2">
+                    <h4 class="font-semibold text-slate-800 dark:text-slate-200">3. Вплив поля</h4>
+                    <p class="leading-relaxed text-xs">
+                        Без поля електрони рухаються хаотично (струму немає). Під дією поля на хаотичний рух накладається повільний рух у напрямку дії електричної сили — виникає струм.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-xs text-slate-400 dark:text-slate-600">
+            <p>© 2026 Інтерактивні фізичні вправи. Розроблено для інтерактивної демонстрації.</p>
+        </footer>
+    </div>
+
+    <!-- Script Section -->
+    <script>
+        // Quiz Data
+        const quizData = [
+            {
+                id: 1,
+                question: "Що саме являє собою електричний струм у металах?",
+                options: [
+                    { key: "A", text: "Напрямлений рух позитивно заряджених йонів" },
+                    { key: "B", text: "Напрямлений рух вільних електронів", correct: true },
+                    { key: "C", text: "Хаотичний тепловий рух атомів металу" },
+                    { key: "D", text: "Зміщення нейтральних атомів під дією сили" }
+                ],
+                explanation: "У металах носіями струму є виключно вільні електрони, які здатні вільно переміщатися по всьому об'єму провідника. Позитивні йони міцно утримуються у вузлах кристалічної ґратки і струм не переносять."
+            },
+            {
+                id: 2,
+                question: "Чому вільні електрони в металах з'являються за будь-яких умов (наявні завжди)?",
+                options: [
+                    { key: "A", text: "Вони потрапляють у метал з навколишнього повітря" },
+                    { key: "B", text: "Валентні електрони атомів металу слабо утримуються ядром і легко стають вільними", correct: true },
+                    { key: "C", text: "Вони виникають лише під час сильного нагрівання провідника" },
+                    { key: "D", text: "Кристалічна ґратка металу повністю складається з чистих електронів" }
+                ],
+                explanation: "Під час утворення металевої кристалічної ґратки валентні електрони атомів легко відриваються від своїх ядер, перетворюючи нейтральні атоми на позитивні йони. Ці електрони стають спільними (вільними) для всього шматка металу."
+            },
+            {
+                id: 3,
+                question: "Яку назву в фізиці отримав хаотичний рух вільних електронів у металі за відсутності електричного поля?",
+                options: [
+                    { key: "A", text: "Електронний газ", correct: true },
+                    { key: "B", text: "Електричний вітер" },
+                    { key: "C", text: "Плазмовий потік" },
+                    { key: "D", text: "Йонна рідина" }
+                ],
+                explanation: "Оскільки вільних електронів у металі надзвичайно багато і вони безперервно стикаються між собою та з йонами ґратки, їхній хаотичний тепловий рух нагадує рух молекул звичайного газу. Тому в класичній теорії його називають електронним газом."
+            },
+            {
+                id: 4,
+                question: "Що відбувається з рухом електронів, коли всередині металевого провідника створюють електричне поле?",
+                options: [
+                    { key: "A", text: "Електрони повністю зупиняють свій хаотичний рух і рухаються суворо по прямій" },
+                    { key: "B", text: "Електрони починають обертатися навколо позитивних йонів у зворотний бік" },
+                    { key: "C", text: "Не припиняючи хаотичного руху, електрони починають зміщуватися в напрямку дії електричної сили", correct: true },
+                    { key: "D", text: "Всі електрони миттєво залишають межі металевого провідника" }
+                ],
+                explanation: "Електричне поле створює силу, яка змушує всі вільні електрони додатково зміщуватися (дрейфувати) в одному напрямку. Проте цей дрейф є дуже повільним і накладається на надзвичайно швидкий хаотичний тепловий рух, який ні на мить не припиняється."
+            },
+            {
+                id: 5,
+                question: "Які частинки залишаються нерухомими у вузлах кристалічної ґратки металу під час проходження струму?",
+                options: [
+                    { key: "A", text: "Негативні йони" },
+                    { key: "B", text: "Позитивні йони", correct: true },
+                    { key: "C", text: "Вільні нейтрино" },
+                    { key: "D", text: "Вільні електрони" }
+                ],
+                explanation: "При проходженні електричного струму позитивно заряджені йони металу залишаються на своїх місцях у вузлах кристалічної ґратки. Вони здійснюють лише коливальний тепловий рух біля положення рівноваги."
+            }
+        ];
+
+        // State variables
+        let currentQuestionIdx = 0;
+        let selectedOptionIdx = null;
+        let isSubmitted = false;
+        let score = 0;
+
+        // Canvas Simulation variables
+        const canvas = document.getElementById('conductorCanvas');
+        const ctx = canvas.getContext('2d');
+        let animationFrameId;
+        
+        let fieldOn = false;
+        const ions = [];
+        const electrons = [];
+        const ionRows = 3;
+        const ionCols = 6;
+        const electronCount = 35;
+
+        // Initialize Simulation Elements
+        function initSimulation() {
+            ions.length = 0;
+            electrons.length = 0;
+
+            // Generate lattice ions (vibrate slightly)
+            const cellWidth = canvas.width / (ionCols + 1);
+            const cellHeight = canvas.height / (ionRows + 1);
+
+            for (let r = 0; r < ionRows; r++) {
+                for (let c = 0; c < ionCols; c++) {
+                    ions.push({
+                        x: cellWidth * (c + 1),
+                        y: cellHeight * (r + 1),
+                        baseX: cellWidth * (c + 1),
+                        baseY: cellHeight * (r + 1),
+                        radius: 10,
+                        vibrationAngle: Math.random() * Math.PI * 2,
+                        vibrationSpeed: 0.1 + Math.random() * 0.1
+                    });
+                }
+            }
+
+            // Generate free electrons
+            for (let i = 0; i < electronCount; i++) {
+                electrons.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 2.5,
+                    vy: (Math.random() - 0.5) * 2.5,
+                    radius: 2.5
+                });
+            }
+        }
+
+        // Resize handler for Canvas
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = 192 * window.devicePixelRatio; // match dynamic height equivalent to h-48
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            // Re-init structures as dimensions changed
+            initSimulation();
+        }
+
+        // Simulation Loop
+        function drawSimulation() {
+            const w = canvas.width / window.devicePixelRatio;
+            const h = canvas.height / window.devicePixelRatio;
+            ctx.clearRect(0, 0, w, h);
+
+            // Draw field arrows if field is ON
+            if (fieldOn) {
+                ctx.strokeStyle = 'rgba(99, 102, 241, 0.2)';
+                ctx.lineWidth = 1.5;
+                for (let i = 40; i < h; i += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(10, i);
+                    ctx.lineTo(w - 10, i);
+                    ctx.stroke();
+                    
+                    // Draw arrowhead to the left (electrons go right, so field direction (+ to -) is actually pointing to the left)
+                    ctx.fillStyle = 'rgba(99, 102, 241, 0.3)';
+                    ctx.beginPath();
+                    ctx.moveTo(10, i);
+                    ctx.lineTo(18, i - 4);
+                    ctx.lineTo(18, i + 4);
+                    ctx.fill();
+                }
+            }
+
+            // Update & Draw Ions (Vibrating Lattice)
+            ions.forEach(ion => {
+                // thermal vibration
+                ion.vibrationAngle += ion.vibrationSpeed;
+                const amp = fieldOn ? 2.5 : 1.5; // field causes more heat/vibration (resistance)
+                ion.x = ion.baseX + Math.sin(ion.vibrationAngle) * amp;
+                ion.y = ion.baseY + Math.cos(ion.vibrationAngle) * amp;
+
+                // Glowing background for ion
+                const grad = ctx.createRadialGradient(ion.x, ion.y, 2, ion.x, ion.y, ion.radius + 3);
+                grad.addColorStop(0, '#ef4444');
+                grad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(ion.x, ion.y, ion.radius + 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Solid Core
+                ctx.fillStyle = '#f87171';
+                ctx.beginPath();
+                ctx.arc(ion.x, ion.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Plus sign inside ion
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                // horizontal
+                ctx.moveTo(ion.x - 3, ion.y);
+                ctx.lineTo(ion.x + 3, ion.y);
+                // vertical
+                ctx.moveTo(ion.x, ion.y - 3);
+                ctx.lineTo(ion.x, ion.y + 3);
+                ctx.stroke();
+            });
+
+            // Update & Draw Electrons
+            electrons.forEach(el => {
+                // Apply constant force to the right when field is ON (electrons have - charge, flow to positive pole on the right)
+                if (fieldOn) {
+                    el.vx += 0.08; // drift acceleration
+                    // speed limit for drift
+                    if (el.vx > 3.5) el.vx = 3.5;
+                }
+
+                // Move electron
+                el.x += el.vx;
+                el.y += el.vy;
+
+                // Boundary check (wrap around left/right, bounce top/bottom)
+                if (el.x < 0) {
+                    el.x = w;
+                } else if (el.x > w) {
+                    el.x = 0;
+                }
+
+                if (el.y < 0) {
+                    el.y = 0;
+                    el.vy = -el.vy;
+                } else if (el.y > h) {
+                    el.y = h;
+                    el.vy = -el.vy;
+                }
+
+                // Collision detection with ions (simplified scatter)
+                ions.forEach(ion => {
+                    const dx = el.x - ion.x;
+                    const dy = el.y - ion.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < ion.radius + el.radius) {
+                        // elastic bounce angle scatter
+                        const angle = Math.atan2(dy, dx);
+                        const speed = Math.sqrt(el.vx * el.vx + el.vy * el.vy);
+                        el.vx = Math.cos(angle) * speed;
+                        el.vy = Math.sin(angle) * speed;
+                        // Move out of collision
+                        el.x = ion.x + Math.cos(angle) * (ion.radius + el.radius);
+                        el.y = ion.y + Math.sin(angle) * (ion.radius + el.radius);
+                    }
+                });
+
+                // Draw electron (cyan glowing circle)
+                ctx.fillStyle = '#22d3ee';
+                ctx.shadowColor = '#06b6d4';
+                ctx.shadowBlur = 4;
+                ctx.beginPath();
+                ctx.arc(el.x, el.y, el.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0; // reset
+            });
+
+            animationFrameId = requestAnimationFrame(drawSimulation);
+        }
+
+        // DOM elements
+        const themeToggle = document.getElementById('themeToggle');
+        const fieldToggle = document.getElementById('fieldToggle');
+        const fieldStateText = document.getElementById('fieldStateText');
+        const questionScreen = document.getElementById('questionScreen');
+        const endScreen = document.getElementById('endScreen');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const nextBtn = document.getElementById('nextBtn');
+        const quizProgressText = document.getElementById('quizProgressText');
+        const quizProgressBar = document.getElementById('quizProgressBar');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const feedbackBox = document.getElementById('feedbackBox');
+        const feedbackIcon = document.getElementById('feedbackIcon');
+        const feedbackTitle = document.getElementById('feedbackTitle');
+        const feedbackExplanation = document.getElementById('feedbackExplanation');
+        const finalScoreText = document.getElementById('finalScoreText');
+        const scorePercentage = document.getElementById('scorePercentage');
+        const finalScoreMessage = document.getElementById('finalScoreMessage');
+        const restartBtn = document.getElementById('restartBtn');
+
+        // Dark/Light Mode logic
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        // Sync with system preferences init
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+
+        // Toggle Field logic
+        fieldToggle.addEventListener('change', (e) => {
+            fieldOn = e.target.checked;
+            if (fieldOn) {
+                fieldStateText.textContent = "Увімкнено (напрямлений дрейф)";
+                fieldStateText.classList.add('text-indigo-500');
+            } else {
+                fieldStateText.textContent = "Вимкнено (лише хаотичний рух)";
+                fieldStateText.classList.remove('text-indigo-500');
+            }
+        });
+
+        // Initialize App & Simulation
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            drawSimulation();
+            loadQuestion();
+            lucide.createIcons();
+        });
+
+        // Quiz Controller
+        function loadQuestion() {
+            // Reset question-level state
+            selectedOptionIdx = null;
+            isSubmitted = false;
+
+            const q = quizData[currentQuestionIdx];
+
+            // Progress text and bar
+            quizProgressText.textContent = `${currentQuestionIdx + 1} з ${quizData.length}`;
+            quizProgressBar.style.width = `${((currentQuestionIdx + 1) / quizData.length) * 100}%`;
+
+            // Question Text
+            questionText.textContent = `${q.id}. ${q.question}`;
+
+            // Reset navigation button
+            nextBtn.innerHTML = `<span>Перевірити</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+            nextBtn.disabled = true;
+            nextBtn.className = "px-6 py-3 bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 font-semibold rounded-xl cursor-not-allowed transition-all flex items-center gap-2";
+            
+            // Re-render Lucide icons on newly modified elements if any
+            lucide.createIcons();
+
+            // Hide Feedback Box
+            feedbackBox.className = "hidden mt-6 p-4 rounded-xl border transition-all duration-200";
+
+            // Options list rendering
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `option-btn w-full flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-left transition-all hover:border-indigo-300 hover:bg-indigo-50/10 dark:hover:bg-indigo-950/10 focus:outline-none group`;
+                btn.dataset.idx = idx;
+
+                btn.innerHTML = `
+                    <span class="option-badge flex-shrink-0 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500 dark:text-slate-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-950 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all">
+                        ${opt.key}
+                    </span>
+                    <span class="text-sm md:text-base font-medium flex-grow">${opt.text}</span>
+                    <span class="option-indicator w-5 h-5 rounded-full border border-slate-300 dark:border-slate-700 flex items-center justify-center flex-shrink-0 transition-all"></span>
+                `;
+
+                btn.addEventListener('click', () => handleOptionSelect(idx));
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleOptionSelect(idx) {
+            if (isSubmitted) return;
+
+            selectedOptionIdx = idx;
+
+            // Highlight chosen option
+            const btns = document.querySelectorAll('.option-btn');
+            btns.forEach((btn, bIdx) => {
+                const badge = btn.querySelector('.option-badge');
+                const indicator = btn.querySelector('.option-indicator');
+                
+                if (bIdx === idx) {
+                    btn.className = `option-btn w-full flex items-center gap-4 p-4 rounded-xl border-2 border-indigo-500 bg-indigo-50/10 dark:bg-indigo-950/20 text-left transition-all focus:outline-none`;
+                    badge.className = `option-badge flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center font-bold text-white transition-all`;
+                    indicator.className = `option-indicator w-5 h-5 rounded-full bg-indigo-500 border-2 border-indigo-500 flex items-center justify-center flex-shrink-0 transition-all`;
+                    indicator.innerHTML = `<div class="w-2 h-2 rounded-full bg-white"></div>`;
+                } else {
+                    btn.className = `option-btn w-full flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-left transition-all hover:border-indigo-300 hover:bg-indigo-50/10 dark:hover:bg-indigo-950/10 focus:outline-none group`;
+                    badge.className = `option-badge flex-shrink-0 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500 dark:text-slate-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-950 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all`;
+                    indicator.className = `option-indicator w-5 h-5 rounded-full border border-slate-300 dark:border-slate-700 flex items-center justify-center flex-shrink-0 transition-all`;
+                    indicator.innerHTML = ``;
+                }
+            });
+
+            // Enable "Check" button
+            nextBtn.disabled = false;
+            nextBtn.className = "px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-indigo-500/20 active:scale-95 flex items-center gap-2 cursor-pointer";
+        }
+
+        // Check Answer Button / Continue Click
+        nextBtn.addEventListener('click', () => {
+            if (!isSubmitted) {
+                checkAnswer();
+            } else {
+                goToNextQuestion();
+            }
+        });
+
+        function checkAnswer() {
+            isSubmitted = true;
+            const q = quizData[currentQuestionIdx];
+            const chosenOption = q.options[selectedOptionIdx];
+            const isCorrect = chosenOption.correct === true;
+
+            const btns = document.querySelectorAll('.option-btn');
+
+            // Find the correct option index
+            const correctOptionIdx = q.options.findIndex(opt => opt.correct);
+
+            // Style buttons to show correct/incorrect status
+            btns.forEach((btn, bIdx) => {
+                const badge = btn.querySelector('.option-badge');
+                const indicator = btn.querySelector('.option-indicator');
+                btn.style.pointerEvents = 'none'; // disable further interactions
+
+                if (bIdx === correctOptionIdx) {
+                    // Correct answer styled in emerald green
+                    btn.className = `option-btn w-full flex items-center gap-4 p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50/10 dark:bg-emerald-950/10 text-left transition-all focus:outline-none`;
+                    badge.className = `option-badge flex-shrink-0 w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-white transition-all`;
+                    indicator.className = `option-indicator w-5 h-5 rounded-full bg-emerald-500 border-2 border-emerald-500 flex items-center justify-center flex-shrink-0 transition-all`;
+                    indicator.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>`;
+                } else if (bIdx === selectedOptionIdx && !isCorrect) {
+                    // Incorrect selected answer styled in rose red
+                    btn.className = `option-btn w-full flex items-center gap-4 p-4 rounded-xl border-2 border-rose-500 bg-rose-50/10 dark:bg-rose-950/10 text-left transition-all focus:outline-none`;
+                    badge.className = `option-badge flex-shrink-0 w-8 h-8 rounded-lg bg-rose-500 flex items-center justify-center font-bold text-white transition-all`;
+                    indicator.className = `option-indicator w-5 h-5 rounded-full bg-rose-500 border-2 border-rose-500 flex items-center justify-center flex-shrink-0 transition-all`;
+                    indicator.innerHTML = `<i data-lucide="x" class="w-3.5 h-3.5 text-white"></i>`;
+                } else {
+                    // Muted styling for non-interactive elements
+                    btn.className = `option-btn w-full flex items-center gap-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 bg-slate-50/40 dark:bg-slate-900/40 text-left transition-all text-slate-400 dark:text-slate-600 focus:outline-none`;
+                    badge.className = `option-badge flex-shrink-0 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800/40 flex items-center justify-center font-bold text-slate-300 dark:text-slate-700 transition-all`;
+                    indicator.className = `option-indicator w-5 h-5 rounded-full border border-slate-200 dark:border-slate-800 flex items-center justify-center flex-shrink-0 transition-all`;
+                    indicator.innerHTML = ``;
+                }
+            });
+
+            // Update Score & Leaderboard Tracker
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = score.toString().padStart(2, '0');
+                
+                // Show positive feedback
+                feedbackBox.className = "mt-6 p-4 rounded-xl border border-emerald-100 dark:border-emerald-950/60 bg-emerald-50/30 dark:bg-emerald-950/10 transition-all duration-200 block";
+                feedbackIcon.className = "p-1 rounded-full bg-emerald-500 text-white inline-flex mt-0.5";
+                feedbackIcon.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i>`;
+                feedbackTitle.className = "font-bold text-sm text-emerald-800 dark:text-emerald-400";
+                feedbackTitle.textContent = "Правильна відповідь!";
+            } else {
+                // Show negative feedback
+                feedbackBox.className = "mt-6 p-4 rounded-xl border border-rose-100 dark:border-rose-950/60 bg-rose-50/30 dark:bg-rose-950/10 transition-all duration-200 block";
+                feedbackIcon.className = "p-1 rounded-full bg-rose-500 text-white inline-flex mt-0.5";
+                feedbackIcon.innerHTML = `<i data-lucide="x" class="w-4 h-4"></i>`;
+                feedbackTitle.className = "font-bold text-sm text-rose-800 dark:text-rose-400";
+                feedbackTitle.textContent = "Неправильно";
+            }
+
+            // Fill explanation
+            feedbackExplanation.textContent = q.explanation;
+            
+            // Re-render Newly created icon marks
+            lucide.createIcons();
+
+            // Toggle active state on simulation to let users experiment
+            // E.g. If the question was about field toggle, suggest trying it!
+            if (q.id === 4) {
+                // Focus simulation block visually
+                document.getElementById('conductorCanvas').parentElement.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'dark:ring-offset-slate-900');
+                setTimeout(() => {
+                    document.getElementById('conductorCanvas').parentElement.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2', 'dark:ring-offset-slate-900');
+                }, 3000);
+            }
+
+            // Prepare button for navigation
+            const isLast = currentQuestionIdx === quizData.length - 1;
+            nextBtn.innerHTML = `<span>${isLast ? 'Показати результати' : 'Наступне запитання'}</span><i data-lucide="${isLast ? 'award' : 'chevron-right'}" class="w-4 h-4"></i>`;
+            lucide.createIcons();
+        }
+
+        function goToNextQuestion() {
+            if (currentQuestionIdx < quizData.length - 1) {
+                currentQuestionIdx++;
+                loadQuestion();
+            } else {
+                // Render summary
+                renderResults();
+            }
+        }
+
+        function renderResults() {
+            questionScreen.classList.add('hidden');
+            feedbackBox.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+
+            const pct = Math.round((score / quizData.length) * 100);
+            finalScoreText.textContent = `${score} / ${quizData.length}`;
+            scorePercentage.textContent = `${pct}% успішності`;
+
+            if (score === quizData.length) {
+                finalScoreMessage.textContent = "Чудово! Ви продемонстрували відмінні знання фізики провідників!";
+            } else if (score >= 3) {
+                finalScoreMessage.textContent = "Хороший результат! Ви впевнено орієнтуєтеся в темі струму в металах.";
+            } else {
+                finalScoreMessage.textContent = "Вам варто повторити конспект про електронний газ та природу струму.";
+            }
+        }
+
+        // Restart Quiz logic
+        restartBtn.addEventListener('click', () => {
+            currentQuestionIdx = 0;
+            score = 0;
+            scoreDisplay.textContent = "00";
+            
+            endScreen.classList.add('hidden');
+            questionScreen.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+
+            loadQuestion();
+        });
+
+    </script>
+</body>
+</html>
+Відображається "code_artifact.html".
