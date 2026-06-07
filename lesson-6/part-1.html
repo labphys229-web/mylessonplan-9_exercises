@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="uk" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Інтерактивні флешкартки: Електричний струм у металах</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        physics: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            200: '#b9ddfe',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Card Flip Effect */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .preserve-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-300">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700 transition-colors">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-blue-600 rounded-lg text-white shadow-md shadow-blue-500/20">
+                    <!-- Bolt Icon -->
+                    <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">Електричний струм у металах</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Інтерактивний тренажер з фізики</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <!-- Theme Toggle -->
+                <button id="themeToggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition" aria-label="Змінити тему">
+                    <!-- Sun -->
+                    <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path>
+                    </svg>
+                    <!-- Moon -->
+                    <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 py-8 flex flex-col justify-between">
+        
+        <!-- Interactive Electron Animation Banner -->
+        <div class="bg-gradient-to-r from-slate-900 to-blue-950 rounded-2xl p-4 mb-6 shadow-lg border border-blue-900/30 overflow-hidden relative">
+            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]"></div>
+            <div class="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-center sm:text-left">
+                    <h3 class="text-sm font-semibold text-blue-300">Модель кристалічної ґратки металу</h3>
+                    <p class="text-xs text-slate-400 mt-1">Сині кульки (—) — це вільні електрони, що рухаються під дією поля. Помаранчеві (+) — нерухомі йони.</p>
+                </div>
+                <!-- Interactive Grid Model -->
+                <div class="flex items-center space-x-1 bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
+                    <span class="text-xs text-blue-400 font-mono font-bold mr-1">—</span>
+                    <div class="relative w-40 h-8 flex items-center justify-around overflow-hidden">
+                        <!-- Ions (fixed) -->
+                        <div class="absolute left-4 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg shadow-amber-500/30">+</div>
+                        <div class="absolute left-16 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg shadow-amber-500/30">+</div>
+                        <div class="absolute left-28 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg shadow-amber-500/30">+</div>
+                        
+                        <!-- Electrons (moving) -->
+                        <div class="electron absolute w-2.5 h-2.5 bg-blue-400 rounded-full shadow-md shadow-blue-400/50" style="animation: moveRight 3s linear infinite;"></div>
+                        <div class="electron absolute w-2.5 h-2.5 bg-blue-400 rounded-full shadow-md shadow-blue-400/50" style="animation: moveRight 3s linear infinite; animation-delay: 1s;"></div>
+                        <div class="electron absolute w-2.5 h-2.5 bg-blue-400 rounded-full shadow-md shadow-blue-400/50" style="animation: moveRight 3s linear infinite; animation-delay: 2s;"></div>
+                    </div>
+                    <span class="text-xs text-amber-500 font-mono font-bold ml-1">+</span>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            @keyframes moveRight {
+                0% { left: -10%; opacity: 0; transform: translateY(-2px); }
+                10% { opacity: 1; }
+                90% { opacity: 1; }
+                100% { left: 110%; opacity: 0; transform: translateY(2px); }
+            }
+        </style>
+
+        <!-- Mode Tabs -->
+        <div class="flex justify-center mb-6">
+            <div class="bg-slate-200 dark:bg-slate-800 p-1 rounded-xl flex space-x-1 transition-colors">
+                <button id="learnModeBtn" class="px-5 py-2 rounded-lg text-sm font-medium transition duration-200 shadow bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400">
+                    💡 Навчання (Картки)
+                </button>
+                <button id="testModeBtn" class="px-5 py-2 rounded-lg text-sm font-medium transition duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white">
+                    📝 Тест (Вікторина)
+                </button>
+            </div>
+        </div>
+
+        <!-- STUDY MODE VIEW -->
+        <div id="studyModeContainer" class="flex-grow flex flex-col justify-between">
+            <div class="max-w-md w-full mx-auto flex-grow flex flex-col justify-center py-4">
+                
+                <!-- Status & Stats -->
+                <div class="flex justify-between items-center mb-4 text-xs font-semibold text-slate-500 dark:text-slate-400 px-1">
+                    <span id="cardCounter">Картка 1 з 4</span>
+                    <span id="scoreCounter" class="text-emerald-600 dark:text-emerald-400">Вивчено: 0</span>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden mb-6">
+                    <div id="studyProgressBar" class="bg-blue-600 dark:bg-blue-500 h-full transition-all duration-300" style="width: 25%"></div>
+                </div>
+
+                <!-- Flashcard Widget -->
+                <div id="flashcard" class="perspective-1000 w-full h-80 cursor-pointer group mb-6 relative">
+                    <div id="cardInner" class="preserve-3d w-full h-full relative transition-transform duration-500 ease-out">
+                        
+                        <!-- Side A (Question) -->
+                        <div class="backface-hidden absolute inset-0 bg-white dark:bg-slate-800 rounded-3xl p-8 flex flex-col justify-between shadow-lg hover:shadow-xl border border-slate-200 dark:border-slate-700 transition duration-300">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs uppercase tracking-wider font-semibold px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">ЗАПИТАННЯ</span>
+                                <span class="text-xs text-slate-400 dark:text-slate-500 flex items-center space-x-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                                    <span>натисніть щоб перевернути</span>
+                                </span>
+                            </div>
+                            <div class="my-auto text-center">
+                                <p id="questionText" class="text-lg md:text-xl font-bold leading-relaxed text-slate-800 dark:text-slate-100">
+                                    Які частинки «бігають» усередині металевого провідника, коли в ньому протікає струм?
+                                </p>
+                            </div>
+                            <div class="flex justify-center text-xs text-slate-400 dark:text-slate-500 font-medium">
+                                Сторона А (Питання)
+                            </div>
+                        </div>
+
+                        <!-- Side B (Answer) -->
+                        <div class="rotate-y-180 backface-hidden absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800 rounded-3xl p-8 flex flex-col justify-between shadow-lg hover:shadow-xl border border-blue-200 dark:border-blue-900/40 transition duration-300">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs uppercase tracking-wider font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400">ВІДПОВІДЬ</span>
+                                <span class="text-xs text-slate-400 dark:text-slate-500">Клацніть знову, щоб повернути</span>
+                            </div>
+                            <div class="my-auto text-center">
+                                <p id="answerText" class="text-xl md:text-2xl font-black text-blue-700 dark:text-blue-300 leading-normal">
+                                    Вільні електрони.
+                                </p>
+                            </div>
+                            <div class="flex justify-center text-xs text-slate-400 dark:text-slate-500 font-medium">
+                                Сторона Б (Відповідь)
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Self Evaluation Buttons -->
+                <div class="grid grid-cols-2 gap-4 max-w-sm mx-auto w-full mb-6">
+                    <button id="knowBtn" class="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-medium shadow-md shadow-emerald-600/10 active:scale-[0.98] transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span>Знаю!</span>
+                    </button>
+                    <button id="repeatBtn" class="flex items-center justify-center space-x-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 py-3 px-4 rounded-xl font-medium active:scale-[0.98] transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 12H16.22"></path></svg>
+                        <span>Ще вчу</span>
+                    </button>
+                </div>
+
+                <!-- Manual Navigation -->
+                <div class="flex justify-between items-center max-w-xs mx-auto w-full text-slate-600 dark:text-slate-400">
+                    <button id="prevBtn" class="p-2.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <span class="text-sm font-medium">Перемикання вручну</span>
+                    <button id="nextBtn" class="p-2.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TEST MODE VIEW (Initially Hidden) -->
+        <div id="testModeContainer" class="hidden flex-grow flex flex-col justify-between">
+            <div class="max-w-lg w-full mx-auto flex-grow flex flex-col justify-center py-4">
+                
+                <!-- Status & Progress -->
+                <div class="flex justify-between items-center mb-4 text-xs font-semibold text-slate-500 dark:text-slate-400 px-1">
+                    <span id="testCounter">Запитання 1 з 4</span>
+                    <span id="testScore" class="text-blue-600 dark:text-blue-400">Правильно: 0/0</span>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden mb-6">
+                    <div id="testProgressBar" class="bg-blue-600 dark:bg-blue-500 h-full transition-all duration-300" style="width: 25%"></div>
+                </div>
+
+                <!-- Test Card (Question Box) -->
+                <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 shadow-md border border-slate-200 dark:border-slate-700 mb-6 transition-colors">
+                    <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-2">Оберіть вірне твердження:</span>
+                    <h2 id="testQuestionText" class="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 leading-relaxed mb-6">
+                        Які частинки «бігають» усередині металевого провідника, коли в ньому протікає струм?
+                    </h2>
+
+                    <!-- Answer Options Stack -->
+                    <div id="optionsContainer" class="space-y-3">
+                        <!-- Options generated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Feedback Area -->
+                <div id="feedbackMessage" class="h-12 flex items-center justify-center text-sm font-semibold mb-2 opacity-0 transition-opacity">
+                    <span class="text-emerald-600 dark:text-emerald-400 flex items-center"><svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Правильно! Чудовий результат.</span>
+                </div>
+
+                <!-- Next Question (Test) -->
+                <button id="nextTestBtn" class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 px-6 rounded-2xl font-bold shadow-lg shadow-blue-600/20 active:scale-[0.98] transition">
+                    Наступне запитання →
+                </button>
+            </div>
+        </div>
+
+        <!-- COMPLETION MODAL (Modal overlay/Card container) -->
+        <div id="completionOverlay" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-8 text-center shadow-2xl border border-slate-200 dark:border-slate-700 transition duration-300">
+                <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/40 rounded-full flex items-center justify-center mx-auto mb-5 text-emerald-600 dark:text-emerald-400">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h2 class="text-2xl font-black text-slate-800 dark:text-white mb-2">Чудова робота! 🎉</h2>
+                <p id="completionMessage" class="text-slate-500 dark:text-slate-400 mb-6 text-sm">
+                    Ви повністю пройшли тренувальні флешкартки по темі "Електричний струм у металах".
+                </p>
+
+                <!-- Statistics Box -->
+                <div class="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 mb-6 border border-slate-100 dark:border-slate-800 flex justify-around">
+                    <div>
+                        <span class="block text-2xl font-extrabold text-blue-600 dark:text-blue-400" id="statAccuracy">100%</span>
+                        <span class="text-xs text-slate-400">Успішність</span>
+                    </div>
+                    <div class="border-l border-slate-200 dark:border-slate-700 h-8 my-auto"></div>
+                    <div>
+                        <span class="block text-2xl font-extrabold text-slate-700 dark:text-slate-200">4 / 4</span>
+                        <span class="text-xs text-slate-400">Вивчено карт</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col space-y-3">
+                    <button id="restartBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-3.5 px-6 rounded-xl font-bold shadow-md shadow-blue-500/20 transition active:scale-[0.98]">
+                        Почати знову
+                    </button>
+                    <button id="modalCloseBtn" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 text-sm font-medium py-2">
+                        Закрити
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 py-4 transition-colors">
+        <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-400 dark:text-slate-500 gap-2">
+            <div>Розроблено відповідно до шкільної програми з фізики</div>
+            <div>Тема: Електричний струм у металах • 8-9 клас</div>
+        </div>
+    </footer>
+
+    <!-- AUDIO SYNTHESIZER (Sound Effects helper) -->
+    <script>
+        // Web Audio Context fallback & generator
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'flip') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            } else if (type === 'success') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(554.37, audioCtx.currentTime + 0.08);
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.16);
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.24);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'complete') {
+                // Happy chord
+                const now = audioCtx.currentTime;
+                [261.63, 329.63, 392.00, 523.25].forEach((freq, idx) => {
+                    const subOsc = audioCtx.createOscillator();
+                    const subGain = audioCtx.createGain();
+                    subOsc.connect(subGain);
+                    subGain.connect(audioCtx.destination);
+                    subOsc.frequency.setValueAtTime(freq, now + idx * 0.05);
+                    subGain.gain.setValueAtTime(0.08, now + idx * 0.05);
+                    subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                    subOsc.start(now + idx * 0.05);
+                    subOsc.stop(now + 0.6);
+                });
+            }
+        }
+    </script>
+
+    <!-- CORE LOGIC & STATE -->
+    <script>
+        // Flashcard Dataset
+        const cardsData = [
+            {
+                id: 1,
+                question: "Які частинки «бігають» усередині металевого провідника, коли в ньому протікає струм?",
+                answer: "Вільні електрони.",
+                options: ["Протони", "Позитивні йони", "Вільні електрони", "Нейтрони"]
+            },
+            {
+                id: 2,
+                question: "Що таке електричний струм у металах?",
+                answer: "Це напрямлений (упорядкований) рух вільних електронів.",
+                options: [
+                    "Це хаотичний рух атомів металу.",
+                    "Це рух позитивно заряджених йонів у вузлах ґратки.",
+                    "Це напрямлений (упорядкований) рух вільних електронів.",
+                    "Це будь-який рух молекул провідника під дією тепла."
+                ]
+            },
+            {
+                id: 3,
+                question: "Що змушує вільні електрони в металі рухатися в одному напрямку?",
+                answer: "Електричне поле.",
+                options: ["Магнітне поле Землі", "Електричне поле.", "Світловий промінь", "Гравітаційне поле"]
+            },
+            {
+                id: 4,
+                question: "Як називають позитивно заряджені частинки, що утворюють основу (ґратку) металу і залишаються на місці?",
+                answer: "Позитивні йони.",
+                options: ["Негативні йони", "Позитивні йони.", "Електрони провідності", "Атоми водню"]
+            }
+        ];
+
+        // App States
+        let currentMode = 'learn'; // 'learn' or 'test'
+        let currentIdx = 0;
+        let isFlipped = false;
+        let knownCards = new Set();
+        
+        // Test mode state
+        let testCorrectAnswers = 0;
+        let testTotalAnswered = 0;
+        let hasAnsweredCurrent = false;
+
+        // Dom Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+
+        const learnModeBtn = document.getElementById('learnModeBtn');
+        const testModeBtn = document.getElementById('testModeBtn');
+        const studyModeContainer = document.getElementById('studyModeContainer');
+        const testModeContainer = document.getElementById('testModeContainer');
+
+        const flashcard = document.getElementById('flashcard');
+        const cardInner = document.getElementById('cardInner');
+        const questionText = document.getElementById('questionText');
+        const answerText = document.getElementById('answerText');
+        
+        const cardCounter = document.getElementById('cardCounter');
+        const scoreCounter = document.getElementById('scoreCounter');
+        const studyProgressBar = document.getElementById('studyProgressBar');
+
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const knowBtn = document.getElementById('knowBtn');
+        const repeatBtn = document.getElementById('repeatBtn');
+
+        // Test Dom Elements
+        const testCounter = document.getElementById('testCounter');
+        const testScore = document.getElementById('testScore');
+        const testProgressBar = document.getElementById('testProgressBar');
+        const testQuestionText = document.getElementById('testQuestionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const feedbackMessage = document.getElementById('feedbackMessage');
+        const nextTestBtn = document.getElementById('nextTestBtn');
+
+        // Modal Dom Elements
+        const completionOverlay = document.getElementById('completionOverlay');
+        const completionMessage = document.getElementById('completionMessage');
+        const statAccuracy = document.getElementById('statAccuracy');
+        const restartBtn = document.getElementById('restartBtn');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+        // Initialize Light/Dark mode
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            sunIcon.classList.remove('hidden');
+            moonIcon.classList.add('hidden');
+        } else {
+            document.documentElement.classList.remove('dark');
+            sunIcon.classList.add('hidden');
+            moonIcon.classList.remove('hidden');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        });
+
+        // Mode Navigation Handler
+        learnModeBtn.addEventListener('click', () => {
+            currentMode = 'learn';
+            updateModeTabs();
+            renderCard();
+        });
+
+        testModeBtn.addEventListener('click', () => {
+            currentMode = 'test';
+            updateModeTabs();
+            resetTest();
+            renderTestQuestion();
+        });
+
+        function updateModeTabs() {
+            if (currentMode === 'learn') {
+                studyModeContainer.classList.remove('hidden');
+                testModeContainer.classList.add('hidden');
+                learnModeBtn.className = "px-5 py-2 rounded-lg text-sm font-medium transition duration-200 shadow bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400";
+                testModeBtn.className = "px-5 py-2 rounded-lg text-sm font-medium transition duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white";
+            } else {
+                studyModeContainer.classList.add('hidden');
+                testModeContainer.classList.remove('hidden');
+                testModeBtn.className = "px-5 py-2 rounded-lg text-sm font-medium transition duration-200 shadow bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400";
+                learnModeBtn.className = "px-5 py-2 rounded-lg text-sm font-medium transition duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white";
+            }
+        }
+
+        // --- STUDY MODE LOGIC ---
+        function renderCard() {
+            // Force flip back
+            isFlipped = false;
+            cardInner.className = "preserve-3d w-full h-full relative transition-transform duration-500 ease-out";
+            
+            const card = cardsData[currentIdx];
+            questionText.textContent = card.question;
+            answerText.textContent = card.answer;
+
+            // Update UI status
+            cardCounter.textContent = `Картка ${currentIdx + 1} з ${cardsData.length}`;
+            scoreCounter.textContent = `Вивчено: ${knownCards.size} з ${cardsData.length}`;
+            
+            const percentage = ((currentIdx + 1) / cardsData.length) * 100;
+            studyProgressBar.style.width = `${percentage}%`;
+
+            // Prev/Next buttons logic
+            prevBtn.disabled = currentIdx === 0;
+            nextBtn.disabled = currentIdx === cardsData.length - 1;
+        }
+
+        // Card flip handler
+        flashcard.addEventListener('click', () => {
+            isFlipped = !isFlipped;
+            playSound('flip');
+            if (isFlipped) {
+                cardInner.classList.add('rotate-y-180');
+            } else {
+                cardInner.classList.remove('rotate-y-180');
+            }
+        });
+
+        // Navigation
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentIdx > 0) {
+                currentIdx--;
+                renderCard();
+            }
+        });
+
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentIdx < cardsData.length - 1) {
+                currentIdx++;
+                renderCard();
+            }
+        });
+
+        // Self evaluation
+        knowBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            knownCards.add(currentIdx);
+            playSound('success');
+            
+            if (knownCards.size === cardsData.length) {
+                showCompletionModal('learn');
+            } else {
+                goToNextOrUnlearned();
+            }
+        });
+
+        repeatBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            knownCards.delete(currentIdx);
+            goToNextOrUnlearned();
+        });
+
+        function goToNextOrUnlearned() {
+            if (currentIdx < cardsData.length - 1) {
+                currentIdx++;
+            } else {
+                // Wrap around to first unlearned card
+                const unlearnedIdx = cardsData.findIndex((_, idx) => !knownCards.has(idx));
+                if (unlearnedIdx !== -1) {
+                    currentIdx = unlearnedIdx;
+                }
+            }
+            renderCard();
+        }
+
+
+        // --- TEST MODE LOGIC ---
+        function resetTest() {
+            currentIdx = 0;
+            testCorrectAnswers = 0;
+            testTotalAnswered = 0;
+            hasAnsweredCurrent = false;
+        }
+
+        function renderTestQuestion() {
+            hasAnsweredCurrent = false;
+            feedbackMessage.className = "h-12 flex items-center justify-center text-sm font-semibold mb-2 opacity-0 transition-opacity";
+            nextTestBtn.classList.add('hidden');
+
+            const card = cardsData[currentIdx];
+            testQuestionText.textContent = card.question;
+
+            // Render stats
+            testCounter.textContent = `Запитання ${currentIdx + 1} з ${cardsData.length}`;
+            testScore.textContent = `Правильно: ${testCorrectAnswers}/${testTotalAnswered}`;
+            
+            const percentage = ((currentIdx + 1) / cardsData.length) * 100;
+            testProgressBar.style.width = `${percentage}%`;
+
+            // Prepare choices (Shuffling helper)
+            const shuffledOptions = [...card.options];
+            // Render Option Buttons
+            optionsContainer.innerHTML = '';
+            shuffledOptions.forEach((option) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-slate-800 font-medium transition active:scale-[0.99] flex justify-between items-center";
+                btn.innerHTML = `
+                    <span>${option}</span>
+                    <span class="icon-placeholder w-5 h-5 flex items-center justify-center rounded-full border border-slate-300 dark:border-slate-600 text-transparent text-xs font-bold"></span>
+                `;
+                btn.addEventListener('click', () => handleOptionClick(btn, option, card.answer));
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleOptionClick(selectedBtn, optionSelected, correctAnswer) {
+            if (hasAnsweredCurrent) return; // Prevent multiple clicks
+            hasAnsweredCurrent = true;
+            testTotalAnswered++;
+
+            const optionButtons = optionsContainer.querySelectorAll('button');
+            const cleanSelected = optionSelected.trim().replace(/\.$/, "");
+            const cleanCorrect = correctAnswer.trim().replace(/\.$/, "");
+            const isCorrect = cleanSelected === cleanCorrect;
+
+            if (isCorrect) {
+                testCorrectAnswers++;
+                playSound('success');
+                
+                // Style selected button as success
+                selectedBtn.className = "w-full text-left p-4 rounded-xl border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-semibold transition flex justify-between items-center";
+                selectedBtn.querySelector('.icon-placeholder').className = "w-5 h-5 flex items-center justify-center rounded-full bg-emerald-500 text-white text-xs font-bold";
+                selectedBtn.querySelector('.icon-placeholder').innerHTML = "✓";
+
+                // Show feedback message
+                feedbackMessage.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 flex items-center"><svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Чудово! Правильна відповідь.</span>`;
+                feedbackMessage.className = "h-12 flex items-center justify-center text-sm font-semibold mb-2 opacity-100 transition-opacity";
+            } else {
+                playSound('wrong');
+                
+                // Style selected button as error
+                selectedBtn.className = "w-full text-left p-4 rounded-xl border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 font-semibold transition flex justify-between items-center";
+                selectedBtn.querySelector('.icon-placeholder').className = "w-5 h-5 flex items-center justify-center rounded-full bg-rose-500 text-white text-xs font-bold";
+                selectedBtn.querySelector('.icon-placeholder').innerHTML = "✕";
+
+                // Highlight correct answer button
+                optionButtons.forEach((btn) => {
+                    const text = btn.querySelector('span').textContent.trim().replace(/\.$/, "");
+                    if (text === cleanCorrect) {
+                        btn.className = "w-full text-left p-4 rounded-xl border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-semibold transition flex justify-between items-center";
+                        btn.querySelector('.icon-placeholder').className = "w-5 h-5 flex items-center justify-center rounded-full bg-emerald-500 text-white text-xs font-bold";
+                        btn.querySelector('.icon-placeholder').innerHTML = "✓";
+                    }
+                });
+
+                // Show feedback message
+                feedbackMessage.innerHTML = `<span class="text-rose-600 dark:text-rose-400 flex items-center"><svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg> Ой, невірно. Спробуйте запам'ятати.</span>`;
+                feedbackMessage.className = "h-12 flex items-center justify-center text-sm font-semibold mb-2 opacity-100 transition-opacity";
+            }
+
+            // Update stats counter instantly
+            testScore.textContent = `Правильно: ${testCorrectAnswers}/${testTotalAnswered}`;
+
+            // Show Next Button
+            nextTestBtn.classList.remove('hidden');
+        }
+
+        nextTestBtn.addEventListener('click', () => {
+            if (currentIdx < cardsData.length - 1) {
+                currentIdx++;
+                renderTestQuestion();
+            } else {
+                showCompletionModal('test');
+            }
+        });
+
+
+        // --- MODAL UTILS ---
+        function showCompletionModal(mode) {
+            playSound('complete');
+            completionOverlay.classList.remove('hidden');
+            
+            if (mode === 'learn') {
+                completionMessage.textContent = "Вітаємо! Ви успішно переглянули всі карти та вивчили теорію про вільні електрони та кристалічну ґратку.";
+                statAccuracy.textContent = "100%";
+            } else {
+                const accuracy = Math.round((testCorrectAnswers / cardsData.length) * 100);
+                completionMessage.textContent = `Ви завершили тестування з результатом ${testCorrectAnswers} правильних відповідей з ${cardsData.length}.`;
+                statAccuracy.textContent = `${accuracy}%`;
+            }
+        }
+
+        restartBtn.addEventListener('click', () => {
+            completionOverlay.classList.add('hidden');
+            if (currentMode === 'learn') {
+                knownCards.clear();
+                currentIdx = 0;
+                renderCard();
+            } else {
+                resetTest();
+                renderTestQuestion();
+            }
+        });
+
+        modalCloseBtn.addEventListener('click', () => {
+            completionOverlay.classList.add('hidden');
+        });
+
+        // First Init load
+        renderCard();
+
+    </script>
+</body>
+</html>
