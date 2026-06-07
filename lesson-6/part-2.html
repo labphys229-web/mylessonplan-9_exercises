@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Симуляція: Струм в електролітах</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome для іконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+        .canvas-container {
+            position: relative;
+            box-shadow: inset 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
+
+    <!-- Хедер -->
+    <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 p-2.5 rounded-lg text-white shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-flask-vial text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">Електричний струм в електролітах</h1>
+                    <p class="text-xs text-slate-400">Інтерактивна лабораторна симуляція явища електролізу</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="btnInfo" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded-lg text-sm font-medium transition duration-250 flex items-center gap-2 border border-slate-600">
+                    <i class="fa-solid fa-circle-info"></i> Теорія
+                </button>
+                <button id="btnReset" class="bg-rose-600/90 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-250 flex items-center gap-2 shadow-md shadow-rose-900/20">
+                    <i class="fa-solid fa-rotate-left"></i> Скинути
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основна частина -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Ліва панель: Інтерактивний Canvas -->
+        <div class="lg:col-span-8 flex flex-col gap-4">
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex-grow flex flex-col shadow-xl">
+                <!-- Панель статусу симуляції -->
+                <div class="flex justify-between items-center mb-3 text-sm px-2 text-slate-300">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="electrolyteName">Електроліт: Мідний купорос (CuSO₄)</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span>Струм: <strong id="amperageVal" class="text-amber-400 font-mono">0.00 А</strong></span>
+                        <span>Напруга: <strong id="voltageVal" class="text-sky-400 font-mono">0.0 В</strong></span>
+                    </div>
+                </div>
+
+                <!-- Контейнер для Canvas -->
+                <div class="canvas-container bg-slate-950 rounded-xl border border-slate-800 flex-grow overflow-hidden min-h-[350px] md:min-h-[450px]">
+                    <canvas id="simulationCanvas" class="w-full h-full block cursor-pointer"></canvas>
+                </div>
+
+                <!-- Легенда позначень -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 text-xs text-slate-400 px-2">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-3 h-3 rounded-full bg-cyan-400 shadow-sm shadow-cyan-500/50"></span>
+                        <span>Катіон (Позитивний іон)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-3 h-3 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50"></span>
+                        <span>Аніон (Негативний іон)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-1 h-3 bg-red-500 rounded"></span>
+                        <span>Анод (Позитивний електрод +)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-1 h-3 bg-blue-500 rounded"></span>
+                        <span>Катод (Негативний електрод -)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Права панель: Керування параметрами -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+            
+            <!-- Обрати електроліт -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl">
+                <h2 class="text-base font-semibold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-vial text-indigo-400"></i> Вибір речовини
+                </h2>
+                <div class="grid grid-cols-1 gap-2">
+                    <button id="btnCuSO4" class="electrolyte-btn px-4 py-3 rounded-xl border text-left text-sm font-medium transition duration-200 bg-indigo-950/40 border-indigo-500/50 text-indigo-200 shadow-lg shadow-indigo-950/20">
+                        <div class="font-bold text-white">Мідний купорос (CuSO₄)</div>
+                        <div class="text-xs text-slate-400 mt-0.5">Дисоціація на Cu²⁺ та SO₄²⁻. Осадження міді.</div>
+                    </button>
+                    <button id="btnNaCl" class="electrolyte-btn px-4 py-3 rounded-xl border border-slate-700 text-left text-sm font-medium transition duration-200 text-slate-300 hover:bg-slate-700/50">
+                        <div class="font-bold text-white">Кухонна сіль (NaCl)</div>
+                        <div class="text-xs text-slate-400 mt-0.5">Дисоціація на Na⁺ та Cl⁻. Виділення хлору.</div>
+                    </button>
+                    <button id="btnH2O" class="electrolyte-btn px-4 py-3 rounded-xl border border-slate-700 text-left text-sm font-medium transition duration-200 text-slate-300 hover:bg-slate-700/50">
+                        <div class="font-bold text-white">Підкислена вода (H₂O + H₂SO₄)</div>
+                        <div class="text-xs text-slate-400 mt-0.5">Дисоціація води. Виділення Кисню та Водню.</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Слайдери параметрів -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl flex-grow">
+                <h2 class="text-base font-semibold text-white mb-5 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-indigo-400"></i> Параметри середовища
+                </h2>
+
+                <div class="space-y-6">
+                    <!-- Слайдер 1: Напруга -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="voltageRange" class="text-sm text-slate-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-bolt text-yellow-500"></i> Напруга джерела (U):
+                            </label>
+                            <span id="voltageDisplay" class="text-sm font-bold text-yellow-400 font-mono">12.0 В</span>
+                        </div>
+                        <input type="range" id="voltageRange" min="0" max="30" step="0.5" value="12" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500">
+                        <div class="flex justify-between text-2xs text-slate-500 mt-1 font-mono">
+                            <span>0 В</span>
+                            <span>15 В</span>
+                            <span>30 В</span>
+                        </div>
+                    </div>
+
+                    <!-- Слайдер 2: Концентрація іонів -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="densityRange" class="text-sm text-slate-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-droplet text-cyan-400"></i> Концентрація розчину:
+                            </label>
+                            <span id="densityDisplay" class="text-sm font-bold text-cyan-400 font-mono">50%</span>
+                        </div>
+                        <input type="range" id="densityRange" min="10" max="100" step="5" value="50" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500">
+                        <div class="flex justify-between text-2xs text-slate-500 mt-1 font-mono">
+                            <span>Низька</span>
+                            <span>Середня</span>
+                            <span>Висока</span>
+                        </div>
+                    </div>
+
+                    <!-- Слайдер 3: Температура -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="tempRange" class="text-sm text-slate-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-temperature-half text-rose-500"></i> Температура (T):
+                            </label>
+                            <span id="tempDisplay" class="text-sm font-bold text-rose-400 font-mono">20 °C</span>
+                        </div>
+                        <input type="range" id="tempRange" min="5" max="85" step="1" value="20" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-rose-500">
+                        <div class="flex justify-between text-2xs text-slate-500 mt-1 font-mono">
+                            <span>5 °C</span>
+                            <span>45 °C</span>
+                            <span>85 °C</span>
+                        </div>
+                    </div>
+
+                    <!-- Показники Опору та Струму -->
+                    <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-700/50 space-y-2 mt-4">
+                        <div class="flex justify-between text-xs text-slate-400">
+                            <span>Опір розчину (R):</span>
+                            <span id="resistanceDisplay" class="font-mono text-slate-200">120 Ом</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-slate-400">
+                            <span>Маса виділеної речовини:</span>
+                            <span id="massDisplay" class="font-mono text-emerald-400">0.00 мг</span>
+                        </div>
+                        <div class="pt-2 border-t border-slate-800 flex justify-between text-sm font-semibold">
+                            <span class="text-slate-300">Провідність розчину (G):</span>
+                            <span id="conductivityDisplay" class="text-emerald-400 font-mono">8.3 мСм</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Інформаційне модальне вікно (Теорія) -->
+    <div id="theoryModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[100] hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl p-6">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-4 mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-graduation-cap text-indigo-400"></i> Фізичні основи електролізу
+                </h3>
+                <button id="btnCloseModal" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+                <p>
+                    <strong>Електроліти</strong> — це речовини, розчини або розплави яких проводять електричний струм. Провідність електролітів обумовлена наявністю вільних іонів.
+                </p>
+                <p>
+                    <strong>Електролітична дисоціація</strong> — процес розпаду молекул розчиненої речовини на позитивні (катіони) та негативні (аніони) іони під дією молекул розчинника (найчастіше води).
+                </p>
+                <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 font-mono text-center text-xs">
+                    Наприклад: CuSO₄ ⇄ Cu²⁺ (катіон) + SO₄²⁻ (аніон)
+                </div>
+                <p>
+                    Під дією електричного поля електродів починається впорядкований рух іонів:
+                </p>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><strong class="text-cyan-400">Катіони (Cu²⁺, Na⁺, H⁺)</strong> рухаються до негативного електрода (<strong class="text-blue-400">катод</strong>), де приймають електрони (відновлення).</li>
+                    <li><strong class="text-amber-400">Аніони (SO₄²⁻, Cl⁻, OH⁻)</strong> рухаються до позитивного електрода (<strong class="text-red-400">анод</strong>), де віддають електрони (окиснення).</li>
+                </ul>
+                <p>
+                    <strong>Закон Фарадея для електролізу:</strong> Маса речовини, яка виділяється на електроді, прямо пропорційна заряду, що пройшов через електроліт:
+                </p>
+                <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 font-mono text-center text-xs text-yellow-400">
+                    m = k · I · t = k · q
+                </div>
+                <p>
+                    Де <strong>k</strong> — електрохімічний еквівалент речовини, <strong>I</strong> — сила струму, <strong>t</strong> — час електролізу.
+                </p>
+                <p>
+                    <strong>Вплив температури:</strong> При підвищенні температури тепловий рух молекул і іонів стає сильнішим, що збільшує ступінь дисоціації та рухливість іонів. Опір розчину падає, а струм зростає (на відміну від металів!).
+                </p>
+            </div>
+            
+            <div class="mt-6 pt-4 border-t border-slate-700 flex justify-end">
+                <button id="btnCloseModalBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-sm font-medium transition">
+                    Зрозуміло
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Футер -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-3 px-6 text-center text-xs text-slate-500">
+        <div>Інтерактивна модель струму в електролітах &copy; 2026. Для використання в освітніх цілях.</div>
+    </footer>
+
+    <!-- Скрипт логіки симуляції -->
+    <script>
+        // Ініціалізація Canvas
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Елементи інтерфейсу
+        const voltageRange = document.getElementById('voltageRange');
+        const densityRange = document.getElementById('densityRange');
+        const tempRange = document.getElementById('tempRange');
+
+        const voltageDisplay = document.getElementById('voltageDisplay');
+        const densityDisplay = document.getElementById('densityDisplay');
+        const tempDisplay = document.getElementById('tempDisplay');
+
+        const voltageValText = document.getElementById('voltageVal');
+        const amperageValText = document.getElementById('amperageVal');
+        const resistanceDisplay = document.getElementById('resistanceDisplay');
+        const conductivityDisplay = document.getElementById('conductivityDisplay');
+        const massDisplay = document.getElementById('massDisplay');
+        const electrolyteNameText = document.getElementById('electrolyteName');
+
+        // Кнопки вибору речовини
+        const btnCuSO4 = document.getElementById('btnCuSO4');
+        const btnNaCl = document.getElementById('btnNaCl');
+        const btnH2O = document.getElementById('btnH2O');
+
+        // Кнопки теорії та скидання
+        const btnInfo = document.getElementById('btnInfo');
+        const btnReset = document.getElementById('btnReset');
+        const theoryModal = document.getElementById('theoryModal');
+        const btnCloseModal = document.getElementById('btnCloseModal');
+        const btnCloseModalBtn = document.getElementById('btnCloseModalBtn');
+
+        // Фізичні константи речовин
+        const ELECTROLYTES = {
+            CuSO4: {
+                name: "Мідний купорос (CuSO₄)",
+                cationName: "Cu²⁺",
+                anionName: "SO₄²⁻",
+                cationColor: "#22d3ee", // Блакитний (катіони міді)
+                anionColor: "#f59e0b",  // Бурштиновий (сульфат-аніони)
+                baseResistance: 120, // Базовий опір у умовних одиницях
+                electrochemEq: 0.329, // Електрохімічний еквівалент міді (мг/Кл)
+                anodeProduct: "oxygen", // Кисень (з води при електролізі купоросу)
+                cathodeProduct: "copper", // Осадження міді на катоді
+                colorFactor: 'rgba(30, 60, 110, 0.45)' // Колір розчину
+            },
+            NaCl: {
+                name: "Кухонна сіль (NaCl)",
+                cationName: "Na⁺",
+                anionName: "Cl⁻",
+                cationColor: "#67e8f9", 
+                anionColor: "#fbbf24",
+                baseResistance: 70, 
+                electrochemEq: 0.367, // Для Хлору на аноді
+                anodeProduct: "chlorine", // Хлорний газ на аноді
+                cathodeProduct: "hydrogen", // Водень на катоді (із вторинної реакції води)
+                colorFactor: 'rgba(100, 116, 139, 0.2)' 
+            },
+            H2O: {
+                name: "Підкислена вода (H₂O + H₂SO₄)",
+                cationName: "H⁺",
+                anionName: "OH⁻",
+                cationColor: "#38bdf8",
+                anionColor: "#facc15",
+                baseResistance: 180,
+                electrochemEq: 0.0104, // Водень на катоді (мг/Кл)
+                anodeProduct: "oxygen",
+                cathodeProduct: "hydrogen",
+                colorFactor: 'rgba(56, 189, 248, 0.15)'
+            }
+        };
+
+        // Поточний стан
+        let currentElectrolyte = ELECTROLYTES.CuSO4;
+        let voltage = parseFloat(voltageRange.value);
+        let concentration = parseFloat(densityRange.value) / 100;
+        let temperature = parseFloat(tempRange.value);
+
+        let resistance = 100;
+        let current = 0;
+        let massAccumulated = 0;
+        let lastTime = Date.now();
+
+        // Масиви частинок та ефектів
+        let ions = [];
+        let bubbles = [];
+        let cathodeCoatingThickness = 0; // Накопичення міді на катоді
+
+        // Налаштування розмірів канвасу
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Клас іона (зарядженої частинки)
+        class Ion {
+            constructor(type, x, y) {
+                this.type = type; // 'cation' або 'anion'
+                this.x = x || Math.random() * (canvas.width * 0.6) + (canvas.width * 0.2);
+                this.y = y || Math.random() * (canvas.height * 0.45) + (canvas.height * 0.35);
+                this.vx = (Math.random() - 0.5) * 1.2;
+                this.vy = (Math.random() - 0.5) * 1.2;
+                this.radius = type === 'cation' ? 7 : 9; // Катіони зазвичай трохи менші
+                this.recombineTimer = 0;
+            }
+
+            update(electricFieldStrength, temp) {
+                // Тепловий хаотичний рух (зростає з температурою)
+                const thermalForce = 0.05 + (temp / 100) * 0.4;
+                this.vx += (Math.random() - 0.5) * thermalForce;
+                this.vy += (Math.random() - 0.5) * thermalForce;
+
+                // Дія електричного поля (рух уздовж осі X до електродів)
+                // Анод (+, зліва) та Катод (-, справа)
+                if (voltage > 0) {
+                    const fieldForce = electricFieldStrength * 0.25;
+                    if (this.type === 'cation') {
+                        this.vx += fieldForce; // Катіони рухаються вправо (+) до Катода (-)
+                    } else {
+                        this.vx -= fieldForce; // Аніони рухаються вліво (-) до Анода (+)
+                    }
+                }
+
+                // Введення обмеження максимальної швидкості
+                const maxSpeed = 1.2 + (temp / 30);
+                const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (currentSpeed > maxSpeed) {
+                    this.vx = (this.vx / currentSpeed) * maxSpeed;
+                    this.vy = (this.vy / currentSpeed) * maxSpeed;
+                }
+
+                // Рух
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Межі судини (акваріума)
+                const leftBoundary = canvas.width * 0.22;
+                const rightBoundary = canvas.width * 0.78;
+                const topBoundary = canvas.height * 0.35;
+                const bottomBoundary = canvas.height * 0.82;
+
+                // Відбивання від стінок
+                if (this.x < leftBoundary + 10) {
+                    this.x = leftBoundary + 10;
+                    this.vx *= -0.5;
+                }
+                if (this.x > rightBoundary - 10) {
+                    this.x = rightBoundary - 10;
+                    this.vx *= -0.5;
+                }
+                if (this.y < topBoundary) {
+                    this.y = topBoundary;
+                    this.vy *= -0.5;
+                }
+                if (this.y > bottomBoundary) {
+                    this.y = bottomBoundary;
+                    this.vy *= -0.5;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                const color = this.type === 'cation' ? currentElectrolyte.cationColor : currentElectrolyte.anionColor;
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                
+                // Тіні для іонів
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color;
+                
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.shadowBlur = 0; // Скидання тіні
+
+                // Обведення
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+
+                // Позначка заряду
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 9px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const chargeSign = this.type === 'cation' ? '+' : '-';
+                ctx.fillText(chargeSign, this.x, this.y + 0.5);
+            }
+        }
+
+        // Клас бульбашок газу
+        class Bubble {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.radius = Math.random() * 2.5 + 1.5;
+                this.vy = -(Math.random() * 0.6 + 0.4);
+                this.vx = (Math.random() - 0.5) * 0.2;
+                this.color = color || 'rgba(255, 255, 255, 0.4)';
+            }
+
+            update() {
+                this.y += this.vy;
+                this.x += this.vx;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
+        }
+
+        // Розрахунок фізики системи
+        function recalculatePhysics() {
+            // Опір розчину залежить від концентрації та температури
+            // Опір падає із зростанням концентрації та із зростанням температури!
+            const tempFactor = 1 - ((temperature - 5) / (85 - 5)) * 0.6; // Опір знижується до 40% на гарячій воді
+            const concFactor = 1 / (concentration + 0.1); // Опір падає із збільшенням концентрації
+            
+            resistance = Math.round(currentElectrolyte.baseResistance * tempFactor * concFactor);
+            
+            // Струм за законом Ома: I = U / R
+            current = voltage / resistance;
+            
+            // Розрахунок маси за законом Фарадея (m = k * I * t)
+            const now = Date.now();
+            const dt = (now - lastTime) / 1000; // у секундах
+            lastTime = now;
+
+            if (voltage > 0) {
+                const deltaMass = currentElectrolyte.electrochemEq * current * dt * 10; // Швидкість штучно збільшена для наочності
+                massAccumulated += deltaMass;
+                
+                // Збільшення товщини покриття на катоді для мідного купоросу
+                if (currentElectrolyte === ELECTROLYTES.CuSO4) {
+                    cathodeCoatingThickness = Math.min(10, cathodeCoatingThickness + deltaMass * 0.05);
+                }
+            }
+
+            // Оновлення текстових показників у UI
+            voltageDisplay.innerText = `${voltage.toFixed(1)} В`;
+            densityDisplay.innerText = `${Math.round(concentration * 100)}%`;
+            tempDisplay.innerText = `${temperature} °C`;
+
+            voltageValText.innerText = `${voltage.toFixed(1)} В`;
+            amperageValText.innerText = `${current.toFixed(2)} А`;
+            resistanceDisplay.innerText = `${resistance} Ом`;
+            conductivityDisplay.innerText = `${((1 / resistance) * 1000).toFixed(1)} мСм`;
+            massDisplay.innerText = `${massAccumulated.toFixed(2)} мг`;
+            electrolyteNameText.innerText = `Електроліт: ${currentElectrolyte.name}`;
+        }
+
+        // Керування кількістю частинок
+        function manageIonCount() {
+            const targetIonCount = Math.floor(concentration * 80); // Максимум 80 іонів
+
+            // Додаємо або видаляємо іони відповідно до концентрації
+            const currentIonCount = ions.length;
+            if (currentIonCount < targetIonCount) {
+                for (let i = 0; i < targetIonCount - currentIonCount; i++) {
+                    const type = Math.random() > 0.5 ? 'cation' : 'anion';
+                    ions.push(new Ion(type));
+                }
+            } else if (currentIonCount > targetIonCount) {
+                // Видаляємо випадкові
+                ions.splice(0, currentIonCount - targetIonCount);
+            }
+        }
+
+        // Оновлення частинок та хімічних реакцій на електродах
+        function updateParticles() {
+            const electricFieldStrength = voltage / 30; // Умовна напруженість поля
+            
+            // Оновлення та рух іонів
+            ions.forEach((ion) => {
+                ion.update(electricFieldStrength, temperature);
+                
+                // Перевірка взаємодії з електродами
+                const leftElectrodeX = canvas.width * 0.32;
+                const rightElectrodeX = canvas.width * 0.68;
+                const electrodeTopY = canvas.height * 0.28;
+                const electrodeBottomY = canvas.height * 0.73;
+
+                if (ion.y >= electrodeTopY && ion.y <= electrodeBottomY && voltage > 0) {
+                    // Анод (ліворуч, заряджений позитивно) приваблює аніони (-)
+                    if (ion.type === 'anion' && Math.abs(ion.x - leftElectrodeX) < 15) {
+                        handleElectrodeReaction('anode', ion);
+                    }
+                    // Катод (праворуч, заряджений негативно) приваблює катіони (+)
+                    else if (ion.type === 'cation' && Math.abs(ion.x - rightElectrodeX) < 15) {
+                        handleElectrodeReaction('cathode', ion);
+                    }
+                }
+            });
+
+            // Оновлення бульбашок
+            bubbles.forEach((b, index) => {
+                b.update();
+                // Видалення бульбашок, що піднялися
+                if (b.y < canvas.height * 0.32) {
+                    bubbles.splice(index, 1);
+                }
+            });
+        }
+
+        // Реакції на електродах
+        function handleElectrodeReaction(electrode, ion) {
+            const leftElectrodeX = canvas.width * 0.32;
+            const rightElectrodeX = canvas.width * 0.68;
+
+            if (electrode === 'anode') {
+                // Окиснення на Аноді
+                if (currentElectrolyte.anodeProduct === 'oxygen') {
+                    // Виділення бульбашок Кисню O2
+                    if (Math.random() < 0.25) {
+                        bubbles.push(new Bubble(leftElectrodeX - 5 + Math.random() * 10, ion.y, 'rgba(165, 243, 252, 0.5)'));
+                    }
+                } else if (currentElectrolyte.anodeProduct === 'chlorine') {
+                    // Виділення Хлору Cl2 (жовтаві бульбашки)
+                    if (Math.random() < 0.35) {
+                        bubbles.push(new Bubble(leftElectrodeX - 5 + Math.random() * 10, ion.y, 'rgba(163, 230, 53, 0.4)'));
+                    }
+                }
+                
+                // Іон віддає заряд і розчинник генерує новий іон для збереження нейтральності
+                ion.x = canvas.width * 0.4 + Math.random() * (canvas.width * 0.2);
+                ion.y = canvas.height * 0.4 + Math.random() * (canvas.height * 0.3);
+                ion.vx = (Math.random() - 0.5) * 1.5;
+                ion.vy = (Math.random() - 0.5) * 1.5;
+            } 
+            else if (electrode === 'cathode') {
+                // Відновлення на Катоді
+                if (currentElectrolyte.cathodeProduct === 'copper') {
+                    // Мідь осідає у вигляді металу на електроді, бульбашок немає
+                } else if (currentElectrolyte.cathodeProduct === 'hydrogen') {
+                    // Водень H2 виділяється у вигляді активних бульбашок
+                    if (Math.random() < 0.45) {
+                        bubbles.push(new Bubble(rightElectrodeX - 5 + Math.random() * 10, ion.y, 'rgba(255, 255, 255, 0.6)'));
+                    }
+                }
+
+                // Іон відновлюється, повертаємо його в центр розчину як новий іон
+                ion.x = canvas.width * 0.4 + Math.random() * (canvas.width * 0.2);
+                ion.y = canvas.height * 0.4 + Math.random() * (canvas.height * 0.3);
+                ion.vx = (Math.random() - 0.5) * 1.5;
+                ion.vy = (Math.random() - 0.5) * 1.5;
+            }
+        }
+
+        // Візуалізація електричного кола та хімічної ванни
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Параметри геометрії склянки
+            const glassX = canvas.width * 0.2;
+            const glassY = canvas.height * 0.3;
+            const glassW = canvas.width * 0.6;
+            const glassH = canvas.height * 0.55;
+
+            // 1. Заливка рідини (Електроліт)
+            ctx.fillStyle = currentElectrolyte.colorFactor;
+            ctx.fillRect(glassX + 10, glassY + 30, glassW - 20, glassH - 40);
+
+            // Хвилі на поверхні рідини
+            ctx.beginPath();
+            ctx.moveTo(glassX + 10, glassY + 30);
+            for (let i = glassX + 10; i <= glassX + glassW - 10; i += 20) {
+                const waveY = (glassY + 30) + Math.sin(i * 0.05 + Date.now() * 0.003) * 2;
+                ctx.lineTo(i, waveY);
+            }
+            ctx.lineTo(glassX + glassW - 10, glassY + 30);
+            ctx.lineTo(glassX + glassW - 10, glassY + 15);
+            ctx.lineTo(glassX + 10, glassY + 15);
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.8)'; // Прозорий верх
+            ctx.fill();
+
+            // 2. Джерело живлення (Батарея) зверху по центру
+            const sourceX = canvas.width * 0.5;
+            const sourceY = canvas.height * 0.12;
+            
+            // Корпус джерела
+            ctx.fillStyle = '#334155';
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.roundRect(sourceX - 60, sourceY - 30, 120, 60, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            // Текст на джерелі
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText("ДЖЕРЕЛО U", sourceX, sourceY - 12);
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 14px monospace';
+            ctx.fillText(`${voltage.toFixed(1)} В`, sourceX, sourceY + 12);
+
+            // Клеми батареї (+) червона та (-) синя
+            ctx.fillStyle = '#ef4444'; // Ліва (+)
+            ctx.beginPath();
+            ctx.arc(sourceX - 45, sourceY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.fillText("+", sourceX - 45, sourceY + 1);
+
+            ctx.fillStyle = '#3b82f6'; // Права (-)
+            ctx.beginPath();
+            ctx.arc(sourceX + 45, sourceY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.fillText("-", sourceX + 45, sourceY + 1);
+
+            // 3. Електроди
+            const electrodeW = 20;
+            const electrodeH = canvas.height * 0.45;
+            const leftElectrodeX = canvas.width * 0.32;
+            const rightElectrodeX = canvas.width * 0.68;
+            const electrodeTopY = canvas.height * 0.28;
+
+            // Анод (+) ліворуч (вугільний або інертний сірий)
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(leftElectrodeX - electrodeW/2, electrodeTopY, electrodeW, electrodeH);
+            // Світловий контур напруги на Аноді
+            if (voltage > 0) {
+                ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(leftElectrodeX - electrodeW/2 - 1, electrodeTopY - 1, electrodeW + 2, electrodeH + 2);
+            }
+
+            // Катод (-) праворуч (мідний або сталевий)
+            // Якщо мідний купорос, катод покривається рожево-червоною міддю
+            if (currentElectrolyte === ELECTROLYTES.CuSO4 && cathodeCoatingThickness > 0) {
+                // Основна частина електроду
+                ctx.fillStyle = '#64748b';
+                ctx.fillRect(rightElectrodeX - electrodeW/2, electrodeTopY, electrodeW, electrodeH);
+                // Покриття міддю
+                ctx.fillStyle = `rgba(244, 63, 94, ${0.4 + (cathodeCoatingThickness / 10) * 0.6})`;
+                ctx.fillRect(rightElectrodeX - electrodeW/2 - cathodeCoatingThickness/2, electrodeTopY + 10, electrodeW + cathodeCoatingThickness, electrodeH - 10);
+            } else {
+                ctx.fillStyle = '#64748b';
+                ctx.fillRect(rightElectrodeX - electrodeW/2, electrodeTopY, electrodeW, electrodeH);
+            }
+
+            // Світловий контур напруги на Катоді
+            if (voltage > 0) {
+                ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(rightElectrodeX - electrodeW/2 - 1, electrodeTopY - 1, electrodeW + 2, electrodeH + 2);
+            }
+
+            // Написи електродів
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText("АНОД (+)", leftElectrodeX, electrodeTopY - 25);
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '9px sans-serif';
+            ctx.fillText("Окиснення аніонів", leftElectrodeX, electrodeTopY - 12);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText("КАТОД (-)", rightElectrodeX, electrodeTopY - 25);
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '9px sans-serif';
+            ctx.fillText("Відновлення катіонів", rightElectrodeX, electrodeTopY - 12);
+
+            // 4. Дроти електричного кола
+            ctx.lineWidth = 2.5;
+            
+            // Лівий дріт (червоний, від + до Анода)
+            ctx.strokeStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.moveTo(sourceX - 45, sourceY);
+            ctx.lineTo(leftElectrodeX, sourceY);
+            ctx.lineTo(leftElectrodeX, electrodeTopY);
+            ctx.stroke();
+
+            // Правий дріт (синій, від - до Катода)
+            ctx.strokeStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.moveTo(sourceX + 45, sourceY);
+            ctx.lineTo(rightElectrodeX, sourceY);
+            ctx.lineTo(rightElectrodeX, electrodeTopY);
+            ctx.stroke();
+
+            // Рух електронів у металевих дротах (імітація струму)
+            if (voltage > 0) {
+                ctx.fillStyle = '#fef08a';
+                const wireSpeed = (Date.now() * 0.005 * (voltage / 5)) % 60;
+                
+                // Електрони по правому дроту (йдуть від джерела до Катода)
+                ctx.beginPath();
+                ctx.arc(rightElectrodeX, sourceY + 15 + ((Date.now() * 0.05 * current) % (electrodeTopY - sourceY - 20)), 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Електрони по лівому дроту (йдуть від Анода до джерела)
+                ctx.beginPath();
+                ctx.arc(leftElectrodeX, electrodeTopY - 15 - ((Date.now() * 0.05 * current) % (electrodeTopY - sourceY - 20)), 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 5. Передня склянка (прозора ванна)
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.roundRect(glassX, glassY, glassW, glassH, [0, 0, 16, 16]);
+            ctx.stroke();
+
+            // Облик скла (відблиск)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(glassX + 15, glassY + 20);
+            ctx.lineTo(glassX + 15, glassY + glassH - 20);
+            ctx.quadraticCurveTo(glassX + 20, glassY + glassH - 10, glassX + 30, glassY + glassH - 10);
+            ctx.stroke();
+
+            // Малювання бульбашок
+            bubbles.forEach(b => b.draw());
+
+            // Малювання іонів
+            ions.forEach(ion => ion.draw());
+
+            // 6. Формули дисоціації на стінці склянки (водяний знак)
+            ctx.fillStyle = 'rgba(255,255,255,0.07)';
+            ctx.font = 'bold 24px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(currentElectrolyte.cationName + "  ⇄  " + currentElectrolyte.anionName, canvas.width / 2, canvas.height * 0.58);
+        }
+
+        // Головний ігровий цикл симуляції
+        function loop() {
+            recalculatePhysics();
+            manageIonCount();
+            updateParticles();
+            drawScene();
+            requestAnimationFrame(loop);
+        }
+
+        // Обробники подій слайдерів
+        voltageRange.addEventListener('input', (e) => {
+            voltage = parseFloat(e.target.value);
+        });
+
+        densityRange.addEventListener('input', (e) => {
+            concentration = parseFloat(e.target.value) / 100;
+        });
+
+        tempRange.addEventListener('input', (e) => {
+            temperature = parseFloat(e.target.value);
+        });
+
+        // Вибір речовини
+        function setElectrolyte(type) {
+            currentElectrolyte = ELECTROLYTES[type];
+            massAccumulated = 0;
+            cathodeCoatingThickness = 0;
+            bubbles = [];
+            ions = []; // очищуємо для регенерації нових типів іонів
+
+            // Візуальний фокус кнопок
+            document.querySelectorAll('.electrolyte-btn').forEach(btn => {
+                btn.className = "electrolyte-btn px-4 py-3 rounded-xl border border-slate-700 text-left text-sm font-medium transition duration-200 text-slate-300 hover:bg-slate-700/50";
+            });
+
+            let activeBtn = btnCuSO4;
+            if (type === 'NaCl') activeBtn = btnNaCl;
+            if (type === 'H2O') activeBtn = btnH2O;
+
+            activeBtn.className = "electrolyte-btn px-4 py-3 rounded-xl border text-left text-sm font-medium transition duration-200 bg-indigo-950/40 border-indigo-500/50 text-indigo-200 shadow-lg shadow-indigo-950/20";
+        }
+
+        btnCuSO4.addEventListener('click', () => setElectrolyte('CuSO4'));
+        btnNaCl.addEventListener('click', () => setElectrolyte('NaCl'));
+        btnH2O.addEventListener('click', () => setElectrolyte('H2O'));
+
+        // Скидання симуляції
+        btnReset.addEventListener('click', () => {
+            voltageRange.value = 12;
+            densityRange.value = 50;
+            tempRange.value = 20;
+            voltage = 12;
+            concentration = 0.5;
+            temperature = 20;
+            massAccumulated = 0;
+            cathodeCoatingThickness = 0;
+            bubbles = [];
+            ions = [];
+        });
+
+        // Модальне вікно теорії
+        btnInfo.addEventListener('click', () => {
+            theoryModal.classList.remove('hidden');
+        });
+
+        const closeModalFunc = () => {
+            theoryModal.classList.add('hidden');
+        };
+
+        btnCloseModal.addEventListener('click', closeModalFunc);
+        btnCloseModalBtn.addEventListener('click', closeModalFunc);
+        theoryModal.addEventListener('click', (e) => {
+            if (e.target === theoryModal) closeModalFunc();
+        });
+
+        // Старт симуляції після завантаження
+        window.onload = function() {
+            setElectrolyte('CuSO4');
+            loop();
+        };
+    </script>
+</body>
+</html>
