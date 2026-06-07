@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Інтерактивна фізика: Струм у металах</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        physicsBlue: '#1e3a8a',
+                        physicsGold: '#eab308',
+                        physicsDark: '#0f172a'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fira Sans', sans-serif;
+        }
+        .math-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Стиль для перетягування */
+        .drag-item {
+            touch-action: none;
+        }
+        .drop-zone.active-hover {
+            border-color: #eab308;
+            background-color: #fef08a;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Хедер -->
+    <header class="bg-physicsDark text-white shadow-md border-b-4 border-physicsGold">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-physicsGold text-physicsDark p-2.5 rounded-lg font-bold text-xl shadow-inner">
+                    ⚡
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-tight">Електричний струм у металах</h1>
+                    <p class="text-xs text-slate-300">Актуалізація та корекція опорних знань</p>
+                </div>
+            </div>
+            <!-- Навігація між вкладками -->
+            <nav class="flex bg-slate-800 p-1 rounded-lg border border-slate-700">
+                <button onclick="switchTab('dictation')" id="btn-dictation" class="tab-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 bg-physicsGold text-physicsDark shadow-sm">
+                    📝 Диктант
+                </button>
+                <button onclick="switchTab('stewart')" id="btn-stewart" class="tab-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-300 hover:text-white">
+                    🌀 Дослід Стюарта-Толмена
+                </button>
+                <button onclick="switchTab('temp')" id="btn-temp" class="tab-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-300 hover:text-white">
+                    🌡️ Опір та Температура
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Головний контент -->
+    <main class="max-w-6xl w-full mx-auto p-4 flex-grow">
+        
+        <!-- ВКЛАДКА 1: ФІЗИЧНИЙ ДИКТАНТ -->
+        <section id="tab-content-dictation" class="tab-content block">
+            <div class="bg-white rounded-2xl shadow-xl p-6 border border-slate-100">
+                <div class="border-b pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <span class="text-xs font-semibold bg-blue-100 text-physicsBlue px-2.5 py-1 rounded-full uppercase tracking-wider">Етап 1</span>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1">Фізичний диктант «Згадайте головне»</h2>
+                    </div>
+                    <button onclick="resetDictation()" class="flex items-center gap-2 text-sm text-slate-500 hover:text-physicsBlue transition-colors px-3 py-1.5 rounded-lg hover:bg-slate-100">
+                        🔄 Скинути все
+                    </button>
+                </div>
+
+                <p class="text-slate-600 mb-6 text-sm md:text-base">
+                    💡 <span class="font-medium">Інструкція:</span> Перетягніть плашки з правильними відповідями з нижнього пулу у відповідні пропуски в реченнях. Також ви можете просто натиснути спочатку на плашку з відповіддю, а потім на порожній пропуск, щоб заповнити його.
+                </p>
+
+                <!-- Пул відповідей (Word Bank) -->
+                <div class="bg-slate-100 p-4 rounded-xl mb-8 border border-slate-200">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Доступні відповіді (пул варіантів):</h3>
+                    <div id="word-bank" class="flex flex-wrap gap-2.5">
+                        <!-- Сюди динамічно генеруються варіанти -->
+                    </div>
+                </div>
+
+                <!-- Речення диктанту -->
+                <div class="space-y-6">
+                    <!-- Речення 1 -->
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 hover:shadow-sm transition-all flex flex-col md:flex-row md:items-center gap-4">
+                        <span class="font-bold text-physicsBlue text-lg">1.</span>
+                        <p class="text-slate-800 leading-relaxed flex-grow">
+                            Носіями струму в металах є 
+                            <span data-index="1" class="drop-zone inline-flex items-center justify-center min-w-[160px] h-9 mx-1 px-3 border-2 border-dashed border-slate-300 bg-white rounded-lg text-physicsBlue font-semibold text-sm transition-all align-middle cursor-pointer" onclick="handleZoneClick(this)">...</span>.
+                        </p>
+                    </div>
+
+                    <!-- Речення 2 -->
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 hover:shadow-sm transition-all flex flex-col md:flex-row md:items-center gap-4">
+                        <span class="font-bold text-physicsBlue text-lg">2.</span>
+                        <div class="flex-grow flex flex-col lg:flex-row lg:items-center gap-4 justify-between w-full">
+                            <p class="text-slate-800 leading-relaxed">
+                                На рис. 1 подано схему класичного досліду 
+                                <span data-index="2" class="drop-zone inline-flex items-center justify-center min-w-[180px] h-9 mx-1 px-3 border-2 border-dashed border-slate-300 bg-white rounded-lg text-physicsBlue font-semibold text-sm transition-all align-middle cursor-pointer" onclick="handleZoneClick(this)">...</span>, який довів електронну природу провідності.
+                            </p>
+                            <!-- Мініатюра Рис. 1 -->
+                            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm shrink-0 self-start lg:self-auto cursor-pointer hover:bg-slate-100 transition-colors" onclick="switchTab('stewart')">
+                                <span class="text-xs font-semibold text-slate-500">Рис. 1 (Дослід)</span>
+                                <span class="text-physicsBlue text-xs hover:underline">Дивитись симуляцію ↗</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Речення 3 -->
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 hover:shadow-sm transition-all flex flex-col md:flex-row md:items-center gap-4">
+                        <span class="font-bold text-physicsBlue text-lg">3.</span>
+                        <p class="text-slate-800 leading-relaxed flex-grow">
+                            Під час нагрівання металевого провідника його електричний опір 
+                            <span data-index="3" class="drop-zone inline-flex items-center justify-center min-w-[140px] h-9 mx-1 px-3 border-2 border-dashed border-slate-300 bg-white rounded-lg text-physicsBlue font-semibold text-sm transition-all align-middle cursor-pointer" onclick="handleZoneClick(this)">...</span>.
+                        </p>
+                    </div>
+
+                    <!-- Речення 4 -->
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 hover:shadow-sm transition-all flex flex-col md:flex-row md:items-center gap-4">
+                        <span class="font-bold text-physicsBlue text-lg">4.</span>
+                        <p class="text-slate-800 leading-relaxed flex-grow">
+                            Формула, що описує залежність питомого опору металів від температури, має вигляд: 
+                            <span data-index="4" class="drop-zone inline-flex items-center justify-center min-w-[150px] h-9 mx-1 px-3 border-2 border-dashed border-slate-300 bg-white rounded-lg text-physicsBlue font-semibold text-sm transition-all align-middle cursor-pointer math-font" onclick="handleZoneClick(this)">...</span>.
+                        </p>
+                    </div>
+
+                    <!-- Речення 5 -->
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 hover:shadow-sm transition-all flex flex-col md:flex-row md:items-center gap-4">
+                        <span class="font-bold text-physicsBlue text-lg">5.</span>
+                        <p class="text-slate-800 leading-relaxed flex-grow">
+                            Фізична величина, яка у вищезгаданій формулі позначається символом <span class="math-font font-bold">α</span>, називається 
+                            <span data-index="5" class="drop-zone inline-flex items-center justify-center min-w-[280px] h-9 mx-1 px-3 border-2 border-dashed border-slate-300 bg-white rounded-lg text-physicsBlue font-semibold text-sm transition-all align-middle cursor-pointer" onclick="handleZoneClick(this)">...</span>.
+                        </p>
+                    </div>
+
+                    <!-- Речення 6 -->
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 hover:shadow-sm transition-all flex flex-col md:flex-row md:items-center gap-4">
+                        <span class="font-bold text-physicsBlue text-lg">6.</span>
+                        <div class="flex-grow flex flex-col lg:flex-row lg:items-center gap-4 justify-between w-full">
+                            <p class="text-slate-800 leading-relaxed">
+                                На рис. 2 зображено прилад 
+                                <span data-index="6" class="drop-zone inline-flex items-center justify-center min-w-[180px] h-9 mx-1 px-3 border-2 border-dashed border-slate-300 bg-white rounded-lg text-physicsBlue font-semibold text-sm transition-all align-middle cursor-pointer" onclick="handleZoneClick(this)">...</span>, дія якого ґрунтується на 
+                                <span data-index="7" class="drop-zone inline-flex items-center justify-center min-w-[280px] h-9 mx-1 px-3 border-2 border-dashed border-slate-300 bg-white rounded-lg text-physicsBlue font-semibold text-sm transition-all align-middle cursor-pointer" onclick="handleZoneClick(this)">...</span>.
+                            </p>
+                            <!-- Мініатюра Рис. 2 -->
+                            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm shrink-0 self-start lg:self-auto cursor-pointer hover:bg-slate-100 transition-colors" onclick="switchTab('temp')">
+                                <span class="text-xs font-semibold text-slate-500">Рис. 2 (Прилад)</span>
+                                <span class="text-physicsBlue text-xs hover:underline">Дивитись симуляцію ↗</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Кнопка перевірки та Результат -->
+                <div class="mt-8 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <button onclick="checkAnswers()" class="w-full sm:w-auto bg-physicsBlue hover:bg-blue-950 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md transform hover:-translate-y-0.5 active:translate-y-0">
+                        Перевірити результати ✅
+                    </button>
+                    
+                    <div id="results-box" class="hidden flex items-center gap-4 p-3 rounded-xl bg-slate-100 border border-slate-200 w-full sm:w-auto">
+                        <div class="text-sm">
+                            <span class="text-slate-500 block">Правильних відповідей:</span>
+                            <span id="score-text" class="text-lg font-bold text-physicsBlue">0 з 7</span>
+                        </div>
+                        <div class="h-10 w-[2px] bg-slate-300"></div>
+                        <div id="rating-badge" class="font-bold text-sm text-yellow-600 px-3 py-1 rounded-full bg-yellow-50 border border-yellow-200">
+                            Чудово!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ВКЛАДКА 2: ДОСЛІД СТЮАРТА-ТОЛМЕНА -->
+        <section id="tab-content-stewart" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Панель симулятора -->
+                <div class="bg-white rounded-2xl shadow-xl p-6 border border-slate-100 lg:col-span-7 flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-semibold bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full uppercase tracking-wider">Лабораторний симулятор №1</span>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1 mb-2">Експеримент Стюарта і Толмена (1916 р.)</h2>
+                        <p class="text-slate-600 text-sm mb-6">
+                            Обертайте котушку з металевим дротом за годинниковою стрілкою за допомогою слайдера, а потім <strong>різко зупиніть</strong> її! Спостерігайте, як інерція змушує електрони продовжувати рух, генеруючи короткочасний струм.
+                        </p>
+                    </div>
+
+                    <!-- Візуалізація експерименту -->
+                    <div class="bg-slate-950 rounded-xl p-4 flex flex-col items-center justify-center relative overflow-hidden min-h-[320px]">
+                        
+                        <!-- Гальванометр (SVG) -->
+                        <div class="absolute top-4 right-4 bg-slate-900 border border-slate-700 p-2.5 rounded-lg shadow-md flex flex-col items-center">
+                            <span class="text-[10px] text-slate-400 font-semibold mb-1 uppercase tracking-wider">Чутливий Гальванометр</span>
+                            <svg width="100" height="60" viewBox="0 0 100 60" id="galvanometer-svg">
+                                <!-- Шкала -->
+                                <path d="M 15 50 A 40 40 0 0 1 85 50" fill="none" stroke="#475569" stroke-width="3" stroke-dasharray="2,2"/>
+                                <line x1="50" y1="50" x2="50" y2="12" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="2,2" />
+                                <text x="15" y="55" fill="#94a3b8" font-size="8" text-anchor="middle">-G</text>
+                                <text x="50" y="55" fill="#94a3b8" font-size="8" text-anchor="middle">0</text>
+                                <text x="85" y="55" fill="#94a3b8" font-size="8" text-anchor="middle">+G</text>
+                                <!-- Стрілка -->
+                                <g id="galvano-needle" style="transform-origin: 50px 50px; transform: rotate(0deg); transition: transform 0.05s ease-out;">
+                                    <line x1="50" y1="50" x2="50" y2="15" stroke="#facc15" stroke-width="2.5" />
+                                    <circle cx="50" cy="50" r="4" fill="#facc15"/>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <!-- Основний малюнок котушки (Canvas) -->
+                        <canvas id="stewartCanvas" width="480" height="240" class="max-w-full bg-slate-950 rounded-lg"></canvas>
+
+                        <!-- Індикатор інерційного струму -->
+                        <div id="current-indicator" class="absolute bottom-4 left-4 flex items-center gap-2 bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-lg">
+                            <span class="w-2 h-2 rounded-full bg-slate-500 animate-pulse" id="current-led"></span>
+                            <span class="text-xs text-slate-300 font-mono" id="current-value">Струм: 0.00 мкА</span>
+                        </div>
+                    </div>
+
+                    <!-- Панель керування -->
+                    <div class="mt-6 space-y-4">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="flex-grow">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Швидкість обертання котушки:</label>
+                                <input type="range" id="stewart-speed" min="0" max="100" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-physicsBlue">
+                            </div>
+                            <div class="bg-slate-100 px-3 py-2 rounded-lg text-center shrink-0 min-w-[70px]">
+                                <span id="speed-val" class="font-bold text-physicsBlue block">0%</span>
+                                <span class="text-[10px] text-slate-500 uppercase font-semibold">об/хв</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button onclick="brakeCoil()" id="btn-brake" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all uppercase tracking-wider text-sm flex items-center justify-center gap-2">
+                                🛑 Різко зупинити!
+                            </button>
+                            <button onclick="toggleAutoSpin()" id="btn-auto" class="bg-physicsBlue hover:bg-blue-900 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all text-sm">
+                                Авто-обертання 🔄
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Опис та Контекст досліду -->
+                <div class="bg-white rounded-2xl shadow-xl p-6 border border-slate-100 lg:col-span-5 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-4 border-b pb-2 flex items-center gap-2">
+                            <span>ℹ️</span> Суть експерименту
+                        </h3>
+                        <div class="space-y-4 text-slate-600 text-sm leading-relaxed">
+                            <p>
+                                На початку XX століття вчені шукали безпосередній доказ того, що електричний струм у металах створюється саме рухом електронів, а не якихось інших заряджених частинок.
+                            </p>
+                            <div class="p-3 bg-blue-50 border-l-4 border-physicsBlue rounded-r-lg">
+                                <strong class="text-physicsBlue block mb-1">Фізика явища:</strong>
+                                Коли котушка швидко обертається, металевий дріт рухається разом з нею з великою швидкістю. Вільні електрони всередині дроту рухаються з тією ж швидкістю.
+                            </div>
+                            <p>
+                                Під час <strong>різкого гальмування</strong> каркас котушки зупиняється практично миттєво. Проте вільні електрони внаслідок дії закону інерції продовжують свій рух вперед по дроту відносно котушки.
+                            </p>
+                            <p>
+                                Цей напрямлений рух електронів створює короткочасний електричний струм, який реєструє чутливий гальванометр. 
+                            </p>
+                            <div class="p-3 bg-yellow-50 border-l-4 border-physicsGold rounded-r-lg font-semibold text-slate-800">
+                                Оскільки стрілка гальванометра відхиляється у цілком визначений бік, це експериментально довело: вільні носії заряду в металах мають негативний знак (це електрони!).
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-4 border-t text-xs text-slate-400">
+                        * Симуляція враховує момент інерції вільних електронів і затухання струму внаслідок електричного опору провідника.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ВКЛАДКА 3: ОПІР ТА ТЕМПЕРАТУРА -->
+        <section id="tab-content-temp" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Опис та теорія -->
+                <div class="bg-white rounded-2xl shadow-xl p-6 border border-slate-100 lg:col-span-5 flex flex-col justify-between order-2 lg:order-1">
+                    <div>
+                        <span class="text-xs font-semibold bg-blue-100 text-physicsBlue px-2.5 py-1 rounded-full uppercase tracking-wider">Теорія та Формули</span>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1 mb-4">Термометр опору та Мікросвіт</h2>
+                        
+                        <div class="space-y-4 text-slate-600 text-sm leading-relaxed">
+                            <p>
+                                Чому опір металів зростає при нагріванні? Секрет приховано в мікроскопічній будові речовини.
+                            </p>
+                            
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-white font-mono text-center">
+                                <div class="text-xs text-slate-400 mb-1">Формула температурної залежності:</div>
+                                <div class="text-xl text-physicsGold font-bold select-all">ρ = ρ₀(1 + αt)</div>
+                                <div class="text-[10px] text-slate-400 mt-2 text-left space-y-0.5">
+                                    <div>• <span class="text-physicsGold">ρ</span> — питомий опір за температури t [Ом·м]</div>
+                                    <div>• <span class="text-physicsGold">ρ₀</span> — питомий опір за температури 0°C</div>
+                                    <div>• <span class="text-physicsGold">α</span> — температурний коефіцієнт опору [К⁻¹]</div>
+                                    <div>• <span class="text-physicsGold">t</span> — температура за шкалою Цельсія [°C]</div>
+                                </div>
+                            </div>
+
+                            <p>
+                                <strong>Термометр опору (Рис. 2):</strong> платиновий або мідний провідник, поміщений у захисний чохол, підключають до джерела струму. Знаючи залежність опору від температури, за зміною сили струму в колі можна надзвичайно точно визначити температуру навколишнього середовища.
+                            </p>
+
+                            <div class="p-3.5 bg-yellow-50 rounded-xl border border-yellow-100 text-slate-700">
+                                <h4 class="font-bold text-amber-800 text-xs uppercase tracking-wider mb-1">Пояснення мікромоделі:</h4>
+                                На симуляторі праворуч видно кристалічну ґратку металу. При низьких температурах вузли (іони) майже нерухомі, тому електрони легко пролітають крізь них. Зі зростанням температури амплітуда коливань іонів збільшується, що спричиняє частіші зіткнення з електронами. Провідність падає, опір зростає!
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t text-xs text-slate-400">
+                        * Коефіцієнт α для чистих металів близький до 0,004 K⁻¹.
+                    </div>
+                </div>
+
+                <!-- Візуалізація мікросвіту + термометр -->
+                <div class="bg-white rounded-2xl shadow-xl p-6 border border-slate-100 lg:col-span-7 flex flex-col justify-between order-1 lg:order-2">
+                    <div>
+                        <span class="text-xs font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full uppercase tracking-wider">Лабораторний симулятор №2</span>
+                        <h3 class="text-xl font-bold text-slate-900 mt-1 mb-2">Вплив температури на опір</h3>
+                    </div>
+
+                    <!-- Контейнер для графіки -->
+                    <div class="bg-slate-950 rounded-xl p-4 flex flex-col items-center justify-center relative min-h-[350px]">
+                        
+                        <!-- Екран термометра опору (Рис. 2) -->
+                        <div class="absolute top-4 right-4 bg-slate-900 border border-slate-700 p-3 rounded-xl shadow-md flex flex-col items-center">
+                            <span class="text-[10px] text-slate-400 font-semibold mb-1 uppercase tracking-wider">Термометр опору (Dial)</span>
+                            <div class="relative w-28 h-28 bg-slate-800 rounded-full border-4 border-slate-600 flex items-center justify-center overflow-hidden">
+                                <!-- Циферблат -->
+                                <svg width="100" height="100" viewBox="0 0 100 100" id="thermometer-dial">
+                                    <circle cx="50" cy="50" r="45" fill="none" stroke="#475569" stroke-width="2"/>
+                                    <!-- Позначки температур -->
+                                    <text x="50" y="18" fill="#ef4444" font-size="7" font-weight="bold" text-anchor="middle">100°C</text>
+                                    <text x="20" y="52" fill="#94a3b8" font-size="7" text-anchor="middle">0°C</text>
+                                    <text x="80" y="52" fill="#ef4444" font-size="7" text-anchor="middle">200°C</text>
+                                    <!-- Стрілка термометра -->
+                                    <g id="temp-needle" style="transform-origin: 50px 50px; transform: rotate(-90deg); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                                        <line x1="50" y1="50" x2="50" y2="15" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>
+                                        <polygon points="47,20 53,20 50,12" fill="#ef4444" />
+                                        <circle cx="50" cy="50" r="5" fill="#334155"/>
+                                    </g>
+                                </svg>
+                                <!-- Цифрове табло по центру знизу -->
+                                <div class="absolute bottom-2 bg-slate-950 px-2 py-0.5 rounded border border-slate-700">
+                                    <span id="digital-temp-readout" class="text-xs font-mono text-emerald-400 font-bold">0.0 °C</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Візуалізація гратки (Canvas) -->
+                        <canvas id="latticeCanvas" width="480" height="220" class="max-w-full bg-slate-950 rounded-lg"></canvas>
+
+                        <!-- Статистичний віджет знизу -->
+                        <div class="absolute bottom-4 left-4 flex gap-4 bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono text-slate-300">
+                            <div>Питомий опір (ρ): <span id="rho-display" class="text-yellow-400 font-bold">1.00</span> Ом·м</div>
+                            <div>Зіткнень/сек: <span id="collisions-display" class="text-red-400 font-bold">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Повзунок температури -->
+                    <div class="mt-6 space-y-4">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="flex-grow">
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Температура провідника (t):</label>
+                                    <div class="flex gap-2">
+                                        <button onclick="setQuickTemp(0)" class="text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-0.5 rounded font-bold">0°C (холод)</button>
+                                        <button onclick="setQuickTemp(100)" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-0.5 rounded font-bold">100°C</button>
+                                        <button onclick="setQuickTemp(200)" class="text-[10px] bg-red-100 hover:bg-red-200 text-red-800 px-2 py-0.5 rounded font-bold">200°C (жар)</button>
+                                    </div>
+                                </div>
+                                <input type="range" id="temp-slider" min="0" max="200" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-red-500">
+                            </div>
+                            <div class="bg-slate-100 px-4 py-2 rounded-lg text-center shrink-0 min-w-[85px] border border-slate-200 shadow-inner">
+                                <span id="temp-val" class="font-bold text-red-600 block text-lg">0°C</span>
+                                <span class="text-[9px] text-slate-500 uppercase font-bold">температура</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Футер -->
+    <footer class="bg-physicsDark text-slate-400 py-6 mt-12 border-t border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
+            <p>© 2026 Інтерактивний посібник з фізики. Створено на основі навчальних матеріалів.</p>
+            <div class="flex gap-4">
+                <span class="hover:text-white transition-colors cursor-help" title="Зміна електричного опору металів від температури">Тема: Електрична провідність металів</span>
+                <span>•</span>
+                <span class="hover:text-white transition-colors">9 клас (НУШ)
+                    
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Canvas для феєрверку у разі успішного проходження диктанту -->
+    <canvas id="confetti-canvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-50 hidden"></canvas>
+
+    <!-- Скрипти інтерактивності -->
+    <script>
+        // --- ДАНІ ТА СТАН ДОДАТКУ ---
+        const answersData = [
+            { id: "ans1", text: "вільні електрони", correctZone: 1 },
+            { id: "ans2", text: "Стюарта — Толмена", correctZone: 2 },
+            { id: "ans3", text: "збільшується", correctZone: 3 },
+            { id: "ans4", text: "ρ = ρ₀(1 + αt)", correctZone: 4 },
+            { id: "ans5", text: "температурним коефіцієнтом електричного опору", correctZone: 5 },
+            { id: "ans6", text: "термометр опору", correctZone: 6 },
+            { id: "ans7", text: "залежності опору металевого провідника від температури", correctZone: 7 }
+        ];
+
+        let selectedAnswerId = null; // Для мобільних кліків
+        let userPlacements = {}; // zoneId -> answerId
+
+        // --- ІНІЦІАЛІЗАЦІЯ ---
+        window.onload = function() {
+            initDictation();
+            initStewartSimulation();
+            initLatticeSimulation();
+        }
+
+        // Перемикач вкладок
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(`tab-content-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-physicsGold', 'text-physicsDark', 'shadow-sm');
+                btn.classList.add('text-slate-300', 'hover:text-white');
+            });
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            activeBtn.classList.remove('text-slate-300', 'hover:text-white');
+            activeBtn.classList.add('bg-physicsGold', 'text-physicsDark', 'shadow-sm');
+
+            // Рестарт анімацій за потреби
+            if (tabId === 'stewart') {
+                if(!stewartAnimationId) animateStewart();
+            } else if (tabId === 'temp') {
+                if(!latticeAnimationId) animateLattice();
+            }
+        }
+
+        // --- ЧАСТИНА 1: ФІЗИЧНИЙ ДИКТАНТ (ЛОГІКА) ---
+        function initDictation() {
+            const wordBank = document.getElementById('word-bank');
+            wordBank.innerHTML = '';
+            
+            // Перемішуємо варіанти
+            const shuffledAnswers = [...answersData].sort(() => Math.random() - 0.5);
+
+            shuffledAnswers.forEach(ans => {
+                const badge = document.createElement('div');
+                badge.id = ans.id;
+                badge.className = "drag-item bg-white hover:bg-slate-50 text-physicsBlue font-semibold px-4 py-2 rounded-xl border border-slate-200 shadow-sm cursor-grab active:cursor-grabbing select-none text-xs md:text-sm transition-all flex items-center gap-1.5";
+                badge.draggable = true;
+                badge.innerHTML = `<span>✥</span> ${ans.text}`;
+                
+                // Drag and Drop події (для ПК)
+                badge.addEventListener('dragstart', handleDragStart);
+                badge.addEventListener('dragend', handleDragEnd);
+                
+                // Клік подія (для мобільних)
+                badge.addEventListener('click', handleAnswerClick);
+
+                wordBank.appendChild(badge);
+            });
+
+            // Налаштування дроп-зон
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.addEventListener('dragover', handleDragOver);
+                zone.addEventListener('dragleave', handleDragLeave);
+                zone.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function resetDictation() {
+            userPlacements = {};
+            selectedAnswerId = null;
+            document.getElementById('results-box').classList.add('hidden');
+            
+            // Очищення зон
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.textContent = '...';
+                zone.className = "drop-zone inline-flex items-center justify-center min-w-[150px] h-9 mx-1 px-3 border-2 border-dashed border-slate-300 bg-white rounded-lg text-physicsBlue font-semibold text-sm transition-all align-middle cursor-pointer";
+            });
+
+            // Очищення пулу та його перевипуск
+            initDictation();
+        }
+
+        // Реалізація клік-механіки (для мобільних та зручності)
+        function handleAnswerClick(e) {
+            const item = e.currentTarget;
+            
+            // Якщо вже вибрано інший елемент — знімаємо виділення
+            document.querySelectorAll('.drag-item').forEach(el => el.classList.remove('ring-4', 'ring-physicsGold'));
+            
+            if (selectedAnswerId === item.id) {
+                selectedAnswerId = null;
+            } else {
+                selectedAnswerId = item.id;
+                item.classList.add('ring-4', 'ring-physicsGold');
+            }
+        }
+
+        function handleZoneClick(zone) {
+            if (!selectedAnswerId) {
+                // Якщо зона не пуста і клікаємо без вибору іншого слова - повертаємо слово у банк
+                const currentAnsId = Object.keys(userPlacements).find(key => userPlacements[key] === zone);
+                if (currentAnsId) {
+                    returnAnswerToBank(currentAnsId);
+                }
+                return;
+            }
+
+            placeAnswerInZone(selectedAnswerId, zone);
+            selectedAnswerId = null;
+            document.querySelectorAll('.drag-item').forEach(el => el.classList.remove('ring-4', 'ring-physicsGold'));
+        }
+
+        // Drag & Drop функції
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.id);
+            e.target.classList.add('opacity-50');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('opacity-50');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('active-hover');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('active-hover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const zone = e.currentTarget;
+            zone.classList.remove('active-hover');
+            
+            const ansId = e.dataTransfer.getData('text/plain');
+            if (ansId) {
+                placeAnswerInZone(ansId, zone);
+            }
+        }
+
+        function placeAnswerInZone(ansId, zone) {
+            const ansObj = answersData.find(a => a.id === ansId);
+            if (!ansObj) return;
+
+            // Якщо в цій зоні вже щось було, повертаємо старе у банк
+            const oldAnsId = zone.getAttribute('data-placed-id');
+            if (oldAnsId) {
+                returnAnswerToBank(oldAnsId);
+            }
+
+            // Оновлюємо стан зон та відображення
+            zone.textContent = ansObj.text;
+            zone.setAttribute('data-placed-id', ansId);
+            zone.className = "drop-zone inline-flex items-center justify-center min-w-[120px] h-9 mx-1 px-3 border-2 border-solid border-physicsBlue bg-blue-50 hover:bg-blue-100 text-physicsBlue font-semibold text-sm transition-all align-middle cursor-pointer rounded-lg";
+
+            // Приховуємо плашку з варіантом у банку відповідей
+            const elementInBank = document.getElementById(ansId);
+            if (elementInBank) elementInBank.classList.add('hidden');
+
+            userPlacements[ansId] = zone;
+        }
+
+        function returnAnswerToBank(ansId) {
+            const zone = userPlacements[ansId];
+            if (zone) {
+                zone.textContent = '...';
+                zone.removeAttribute('data-placed-id');
+                zone.className = "drop-zone inline-flex items-center justify-center min-w-[150px] h-9 mx-1 px-3 border-2 border-dashed border-slate-300 bg-white rounded-lg text-physicsBlue font-semibold text-sm transition-all align-middle cursor-pointer";
+            }
+
+            const elementInBank = document.getElementById(ansId);
+            if (elementInBank) elementInBank.classList.remove('hidden');
+
+            delete userPlacements[ansId];
+        }
+
+        // Перевірка відповідей та ефекти
+        function checkAnswers() {
+            let correctCount = 0;
+            const totalCount = 7;
+
+            // Скидаємо стилі попередньої перевірки
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.classList.remove('border-emerald-500', 'bg-emerald-50', 'text-emerald-700', 'border-red-500', 'bg-red-50', 'text-red-700');
+            });
+
+            answersData.forEach(ans => {
+                const zone = document.querySelector(`.drop-zone[data-index="${ans.correctZone}"]`);
+                const placedId = zone ? zone.getAttribute('data-placed-id') : null;
+
+                if (placedId === ans.id) {
+                    correctCount++;
+                    if (zone) {
+                        zone.className = "drop-zone inline-flex items-center justify-center min-w-[120px] h-9 mx-1 px-3 border-2 border-solid border-emerald-500 bg-emerald-50 text-emerald-700 font-semibold text-sm transition-all align-middle rounded-lg";
+                    }
+                } else {
+                    if (zone) {
+                        zone.className = "drop-zone inline-flex items-center justify-center min-w-[120px] h-9 mx-1 px-3 border-2 border-solid border-red-500 bg-red-50 text-red-700 font-semibold text-sm transition-all align-middle rounded-lg";
+                    }
+                }
+            });
+
+            // Відображення результатів
+            const resultsBox = document.getElementById('results-box');
+            const scoreText = document.getElementById('score-text');
+            const ratingBadge = document.getElementById('rating-badge');
+
+            scoreText.textContent = `${correctCount} з ${totalCount}`;
+            resultsBox.classList.remove('hidden');
+
+            // Розрахунок оцінки за 12-бальною системою (приблизно)
+            const scorePercent = (correctCount / totalCount) * 100;
+            if (scorePercent === 100) {
+                ratingBadge.textContent = "Відмінно! 🏆 (12 балів)";
+                ratingBadge.className = "font-bold text-sm text-emerald-700 px-3 py-1 rounded-full bg-emerald-100 border border-emerald-300";
+                triggerConfetti();
+            } else if (scorePercent >= 80) {
+                ratingBadge.textContent = "Дуже добре! 👍 (10 балів)";
+                ratingBadge.className = "font-bold text-sm text-blue-700 px-3 py-1 rounded-full bg-blue-100 border border-blue-300";
+            } else if (scorePercent >= 50) {
+                ratingBadge.textContent = "Задовільно 🧐 (7 балів)";
+                ratingBadge.className = "font-bold text-sm text-yellow-700 px-3 py-1 rounded-full bg-yellow-100 border border-yellow-300";
+            } else {
+                ratingBadge.textContent = "Спробуйте ще раз! 🧠";
+                ratingBadge.className = "font-bold text-sm text-red-700 px-3 py-1 rounded-full bg-red-100 border border-red-300";
+            }
+        }
+
+        // --- ЕФЕКТ КОНФЕТТІ (БЕЗ ЗОВНІШНІХ БІБЛІОТЕК) ---
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.classList.remove('hidden');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let particles = [];
+            const colors = ['#facc15', '#3b82f6', '#10b981', '#f43f5e', '#a855f7'];
+
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    r: Math.random() * 6 + 4,
+                    d: Math.random() * canvas.height,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.random() * 10 - 5,
+                    tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                    tiltAngle: 0
+                });
+            }
+
+            let animationFrameId;
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                particles.forEach((p, index) => {
+                    p.tiltAngle += p.tiltAngleIncremental;
+                    p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+                    p.x += Math.sin(p.tiltAngle);
+                    p.tilt = Math.sin(p.tiltAngle - index / 3) * 15;
+
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                    ctx.stroke();
+                });
+
+                // Видалення частинок, що вилетіли за екран
+                particles = particles.filter(p => p.y <= canvas.height);
+
+                if (particles.length > 0) {
+                    animationFrameId = requestAnimationFrame(draw);
+                } else {
+                    canvas.classList.add('hidden');
+                    cancelAnimationFrame(animationFrameId);
+                }
+            }
+            draw();
+        }
+
+        // --- ЧАСТИНА 2: СИМУЛЯТОР ДОСЛІДУ СТЮАРТА — ТОЛМЕНА ---
+        let stewartCanvas, stewartCtx;
+        let stewartAnimationId;
+        let coilAngle = 0;
+        let targetRotationSpeed = 0; // Встановлюється користувачем
+        let currentRotationSpeed = 0; // Плавна зміна швидкості
+        let electrons = []; // Електрони всередині дроту
+        let brakingForce = false;
+        let inertiaCurrent = 0; // Зареєстрований струм від інерції
+        let autoSpinInterval = null;
+
+        function initStewartSimulation() {
+            stewartCanvas = document.getElementById('stewartCanvas');
+            stewartCtx = stewartCanvas.getContext('2d');
+
+            // Ініціалізуємо "вільні електрони" в провіднику
+            // Вони розташовані по колу на циліндрі котушки
+            electrons = [];
+            const radius = 55;
+            const numElectrons = 45;
+            for(let i=0; i<numElectrons; i++) {
+                const angle = (i / numElectrons) * Math.PI * 2;
+                electrons.push({
+                    angle: angle,
+                    baseAngle: angle, // Початкова позиція відносно котушки
+                    relativeOffset: 0, // Зсув внаслідок інерції
+                    velocity: 0 // Швидкість руху електрона відносно каркасу котушки
+                });
+            }
+
+            // Слухач повзунка швидкості
+            const speedSlider = document.getElementById('stewart-speed');
+            speedSlider.addEventListener('input', function() {
+                targetRotationSpeed = parseFloat(this.value) / 10;
+                document.getElementById('speed-val').textContent = `${this.value}%`;
+                brakingForce = false;
+            });
+
+            animateStewart();
+        }
+
+        function toggleAutoSpin() {
+            const btn = document.getElementById('btn-auto');
+            const slider = document.getElementById('stewart-speed');
+            
+            if (autoSpinInterval) {
+                // Вимикаємо
+                clearInterval(autoSpinInterval);
+                autoSpinInterval = null;
+                btn.textContent = "Авто-обертання 🔄";
+                btn.className = "bg-physicsBlue hover:bg-blue-900 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all text-sm";
+            } else {
+                // Вмикаємо циклічний режим розгону
+                btn.textContent = "Зупинити авто-режим ⏸️";
+                btn.className = "bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all text-sm";
+                
+                slider.value = "85";
+                targetRotationSpeed = 8.5;
+                document.getElementById('speed-val').textContent = "85%";
+                brakingForce = false;
+            }
+        }
+
+        function brakeCoil() {
+            if (currentRotationSpeed <= 0.5) return; // Немає швидкості для інерції
+
+            brakingForce = true;
+            const initialBrakingSpeed = currentRotationSpeed;
+
+            // Електрони продовжують рух за інерцією вперед!
+            // Їхня відносна швидкість всередині котушки різко стає рівною швидкості обертання котушки в момент зупинки
+            electrons.forEach(el => {
+                el.velocity = initialBrakingSpeed * 0.15; // Імпульс інерції
+            });
+
+            // Котушка зупиняється миттєво
+            currentRotationSpeed = 0;
+            targetRotationSpeed = 0;
+            document.getElementById('stewart-speed').value = "0";
+            document.getElementById('speed-val').textContent = "0%";
+
+            if (autoSpinInterval) {
+                toggleAutoSpin(); // Вимикаємо авто-обертання
+            }
+        }
+
+        function animateStewart() {
+            stewartCtx.clearRect(0, 0, stewartCanvas.width, stewartCanvas.height);
+
+            // Плавний розгін / гальмування під дією тертя/користувача (якщо не екстрене гальмування)
+            if (!brakingForce) {
+                currentRotationSpeed += (targetRotationSpeed - currentRotationSpeed) * 0.05;
+            }
+
+            coilAngle += currentRotationSpeed * 0.05;
+
+            const centerX = stewartCanvas.width / 2;
+            const centerY = stewartCanvas.height / 2;
+            const coilRadius = 55;
+            const coilLength = 180;
+
+            // 1. Малюємо тримачі (опори) валу зліва та справа
+            stewartCtx.fillStyle = '#475569';
+            // Ліва опора
+            stewartCtx.beginPath();
+            stewartCtx.roundRect(40, centerY - 10, 20, 60, 4);
+            stewartCtx.fill();
+            stewartCtx.fillStyle = '#64748b';
+            stewartCtx.beginPath();
+            stewartCtx.arc(50, centerY - 10, 10, 0, Math.PI, true);
+            stewartCtx.fill();
+
+            // Права опора
+            stewartCtx.fillStyle = '#475569';
+            stewartCtx.beginPath();
+            stewartCtx.roundRect(stewartCanvas.width - 60, centerY - 10, 20, 60, 4);
+            stewartCtx.fill();
+            stewartCtx.fillStyle = '#64748b';
+            stewartCtx.beginPath();
+            stewartCtx.arc(stewartCanvas.width - 50, centerY - 10, 10, 0, Math.PI, true);
+            stewartCtx.fill();
+
+            // 2. Малюємо вал (вісь обертання)
+            stewartCtx.fillStyle = '#cbd5e1';
+            stewartCtx.fillRect(45, centerY - 6, stewartCanvas.width - 90, 12);
+
+            // 3. Малюємо ковзні контакти та дроти до гальванометра
+            stewartCtx.strokeStyle = '#ef4444';
+            stewartCtx.lineWidth = 2;
+            stewartCtx.beginPath();
+            stewartCtx.moveTo(centerX - coilLength/2 + 10, centerY + coilRadius);
+            stewartCtx.lineTo(centerX - coilLength/2 + 10, centerY + 85);
+            stewartCtx.lineTo(stewartCanvas.width - 70, centerY + 85);
+            stewartCtx.lineTo(stewartCanvas.width - 50, centerY + 25); // До гальванометра
+            stewartCtx.stroke();
+
+            // Другий провід
+            stewartCtx.strokeStyle = '#3b82f6';
+            stewartCtx.beginPath();
+            stewartCtx.moveTo(centerX + coilLength/2 - 10, centerY + coilRadius);
+            stewartCtx.lineTo(centerX + coilLength/2 - 10, centerY + 95);
+            stewartCtx.lineTo(stewartCanvas.width - 30, centerY + 95);
+            stewartCtx.lineTo(stewartCanvas.width - 45, centerY + 25);
+            stewartCtx.stroke();
+
+            // 4. Малюємо циліндр котушки (каркас)
+            stewartCtx.fillStyle = '#1e293b';
+            stewartCtx.strokeStyle = '#475569';
+            stewartCtx.lineWidth = 3;
+            stewartCtx.beginPath();
+            stewartCtx.roundRect(centerX - coilLength/2, centerY - coilRadius, coilLength, coilRadius * 2, 8);
+            stewartCtx.fill();
+            stewartCtx.stroke();
+
+            // Бокові металеві кільця котушки
+            stewartCtx.fillStyle = '#94a3b8';
+            stewartCtx.fillRect(centerX - coilLength/2, centerY - coilRadius, 10, coilRadius * 2);
+            stewartCtx.fillRect(centerX + coilLength/2 - 10, centerY - coilRadius, 10, coilRadius * 2);
+
+            // 5. Обертові мітки на котушці (щоб бачити швидкість)
+            stewartCtx.fillStyle = '#facc15';
+            for (let i = 0; i < 4; i++) {
+                const markAngle = coilAngle + (i * Math.PI / 2);
+                const markY = centerY + Math.sin(markAngle) * (coilRadius - 2);
+                const markHeight = 8;
+                // Відображаємо тільки ті, що на передній стороні (sin > 0)
+                if (Math.cos(markAngle) > 0) {
+                    stewartCtx.fillRect(centerX - 8, markY - markHeight/2, 16, markHeight);
+                }
+            }
+
+            // Малюємо обмотку котушки (червоний мідний дріт)
+            stewartCtx.strokeStyle = '#f97316';
+            stewartCtx.lineWidth = 1.5;
+            const numTurns = 28;
+            for (let i = 0; i < numTurns; i++) {
+                const turnX = (centerX - coilLength/2 + 15) + (i * (coilLength - 30) / numTurns);
+                const turnPhase = coilAngle * 3 + (i * 0.3); // Хвиля обертання дроту
+                
+                stewartCtx.beginPath();
+                stewartCtx.arc(turnX, centerY, coilRadius, -Math.PI/2, Math.PI/2);
+                stewartCtx.stroke();
+            }
+
+            // 6. Розраховуємо струм інерції та поведінку електронів
+            let calculatedCurrent = 0;
+
+            electrons.forEach(el => {
+                if (brakingForce) {
+                    // Вільні електрони продовжують рух вперед по інерції!
+                    el.relativeOffset += el.velocity;
+                    // Опір металу уповільнює їх відносний рух (експоненційне затухання)
+                    el.velocity *= 0.95; 
+                    
+                    // Сумарна швидкість руху всіх електронів визначає інерційний струм
+                    calculatedCurrent += el.velocity;
+                } else {
+                    // Якщо котушка просто обертається рівномірно (або сповільнюється без гальма),
+                    // електрони рухаються синхронно з каркасом котушки
+                    el.relativeOffset *= 0.9; // Повертаються в стан спокою відносно котушки
+                    el.velocity = 0;
+                }
+            });
+
+            // Напрямлений рух електронів створює струм
+            inertiaCurrent = calculatedCurrent * 12.5; // Коефіцієнт масштабування для візуалізації
+
+            if (brakingForce && inertiaCurrent < 0.05) {
+                brakingForce = false; // Сила інерції вичерпалась
+                inertiaCurrent = 0;
+            }
+
+            // Оновлення інтерфейсу струму
+            const currentLED = document.getElementById('current-led');
+            const currentValText = document.getElementById('current-value');
+            if (inertiaCurrent > 0.1) {
+                currentLED.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping";
+                currentValText.textContent = `Струм: ${inertiaCurrent.toFixed(2)} мкА`;
+            } else {
+                currentLED.className = "w-2.5 h-2.5 rounded-full bg-slate-500";
+                currentValText.textContent = "Струм: 0.00 мкА";
+            }
+
+            // Стрілка гальванометра реагує на інерційний струм!
+            const needleAngle = Math.min(45, inertiaCurrent * 4); // Граничний кут відхилення
+            const needleElement = document.getElementById('galvano-needle');
+            if (needleElement) {
+                needleElement.style.transform = `rotate(${needleAngle}deg)`;
+            }
+
+            // 7. Малюємо електрони (сині точки всередині провідника)
+            stewartCtx.fillStyle = '#60a5fa';
+            electrons.forEach(el => {
+                // Повний кут електрона = кут обертання котушки + початкова фаза + інерційний зсув
+                const totalAngle = coilAngle + el.baseAngle + el.relativeOffset;
+                const eX = centerX + Math.cos(totalAngle) * (coilRadius - 10);
+                const eY = centerY + Math.sin(totalAngle) * (coilRadius - 10);
+
+                // Малюємо електрон тільки якщо він на передньому плані (3D-ефект)
+                if (Math.sin(totalAngle) > -0.2) {
+                    stewartCtx.beginPath();
+                    stewartCtx.arc(eX, eY, 4, 0, Math.PI * 2);
+                    stewartCtx.fill();
+                    // Тінь електрона
+                    stewartCtx.fillStyle = '#93c5fd';
+                    stewartCtx.beginPath();
+                    stewartCtx.arc(eX, eY, 1.5, 0, Math.PI * 2);
+                    stewartCtx.fill();
+                    stewartCtx.fillStyle = '#60a5fa';
+                }
+            });
+
+            // Напис-стрілка напрямку обертання котушки (якщо крутиться)
+            if (currentRotationSpeed > 0.1) {
+                stewartCtx.strokeStyle = '#facc15';
+                stewartCtx.lineWidth = 2;
+                stewartCtx.beginPath();
+                stewartCtx.arc(55, centerY, 35, -Math.PI/3, Math.PI/3);
+                stewartCtx.stroke();
+                // Наконечник стрілки
+                stewartCtx.fillStyle = '#facc15';
+                stewartCtx.beginPath();
+                stewartCtx.moveTo(70, centerY + 25);
+                stewartCtx.lineTo(82, centerY + 33);
+                stewartCtx.lineTo(65, centerY + 38);
+                stewartCtx.fill();
+            }
+
+            stewartAnimationId = requestAnimationFrame(animateStewart);
+        }
+
+        // --- ЧАСТИНА 3: СИМУЛЯТОР МІКРОСВІТУ & ТЕМПЕРАТУРНОЇ ЗАЛЕЖНОСТІ ---
+        let latticeCanvas, latticeCtx;
+        let latticeAnimationId;
+        let temperature = 0; // в градусах Цельсія (0 - 200)
+        let ions = []; // Кристалічна ґратка (іони металу)
+        let conductionElectrons = []; // Електрони провідності
+        let totalCollisions = 0;
+        let collisionResetCounter = 0;
+
+        function initLatticeSimulation() {
+            latticeCanvas = document.getElementById('latticeCanvas');
+            latticeCtx = latticeCanvas.getContext('2d');
+
+            // Створення кристалічної ґратки (вузли іонів)
+            // Сітка 6x3
+            ions = [];
+            const rows = 3;
+            const cols = 6;
+            const spacingX = latticeCanvas.width / (cols + 1);
+            const spacingY = latticeCanvas.height / (rows + 1);
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    ions.push({
+                        baseX: spacingX * (c + 1),
+                        baseY: spacingY * (r + 1),
+                        x: spacingX * (c + 1),
+                        y: spacingY * (r + 1),
+                        phaseX: Math.random() * Math.PI * 2,
+                        phaseY: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            // Електрони, які хаотично рухаються зліва направо під впливом електричного поля
+            conductionElectrons = [];
+            const numElectrons = 25;
+            for (let i = 0; i < numElectrons; i++) {
+                conductionElectrons.push({
+                    x: Math.random() * latticeCanvas.width,
+                    y: 15 + Math.random() * (latticeCanvas.height - 30),
+                    speedX: 2 + Math.random() * 2,
+                    speedY: (Math.random() - 0.5) * 1.5,
+                    size: 3,
+                    collisionCooldown: 0
+                });
+            }
+
+            // Слухач повзунка температури
+            const tempSlider = document.getElementById('temp-slider');
+            tempSlider.addEventListener('input', function() {
+                updateTemperature(parseInt(this.value));
+            });
+
+            animateLattice();
+        }
+
+        function setQuickTemp(targetVal) {
+            document.getElementById('temp-slider').value = targetVal.toString();
+            updateTemperature(targetVal);
+        }
+
+        function updateTemperature(val) {
+            temperature = val;
+            document.getElementById('temp-val').textContent = `${temperature}°C`;
+            document.getElementById('digital-temp-readout').textContent = `${temperature.toFixed(1)} °C`;
+
+            // Стрілка приладу (Рис. 2)
+            // Початковий нульовий стан стрілки приладів зазвичай спрямований ліворуч/знизу
+            // Робимо кут повороту від -90 градусів (0°C) до 90 градусів (200°C)
+            const angleDeg = -90 + (temperature / 200) * 180;
+            const needle = document.getElementById('temp-needle');
+            if (needle) {
+                needle.style.transform = `rotate(${angleDeg}deg)`;
+            }
+
+            // Розрахунок питомого опору за формулою: ρ = ρ₀ * (1 + αt)
+            // Для візуалізації приймемо ρ₀ = 1.00 та α = 0.004
+            const alpha = 0.004;
+            const rho = 1.0 * (1 + alpha * temperature);
+            document.getElementById('rho-display').textContent = rho.toFixed(2);
+        }
+
+        function animateLattice() {
+            latticeCtx.clearRect(0, 0, latticeCanvas.width, latticeCanvas.height);
+
+            const time = Date.now() * 0.005;
+            // Амплітуда коливань іонів пропорційна температурі
+            // При 0°C коливання мінімальні, при 200°C — дуже потужні
+            const vibrationAmplitude = 1 + (temperature / 200) * 12;
+
+            // 1. Оновлюємо та малюємо іони (вузли ґратки)
+            ions.forEach(ion => {
+                // Теплове хаотичне коливання
+                const dx = Math.sin(time * 3 + ion.phaseX) * vibrationAmplitude;
+                const dy = Math.cos(time * 3.5 + ion.phaseY) * vibrationAmplitude;
+                ion.x = ion.baseX + dx;
+                ion.y = ion.baseY + dy;
+
+                // Малюємо зону теплових коливань іона (напівпрозоре коло)
+                latticeCtx.fillStyle = `rgba(239, 68, 68, ${0.05 + (temperature / 200) * 0.25})`;
+                latticeCtx.beginPath();
+                latticeCtx.arc(ion.x, ion.y, 14 + vibrationAmplitude, 0, Math.PI * 2);
+                latticeCtx.fill();
+
+                // Малюємо ядро іона (позитивний іон металу)
+                const ionColorGradient = latticeCtx.createRadialGradient(ion.x, ion.y, 2, ion.x, ion.y, 12);
+                ionColorGradient.addColorStop(0, '#fca5a5');
+                ionColorGradient.addColorStop(1, '#dc2626');
+                latticeCtx.fillStyle = ionColorGradient;
+                latticeCtx.beginPath();
+                latticeCtx.arc(ion.x, ion.y, 10, 0, Math.PI * 2);
+                latticeCtx.fill();
+
+                // Знак плюс всередині іона
+                latticeCtx.strokeStyle = '#ffffff';
+                latticeCtx.lineWidth = 1.5;
+                latticeCtx.beginPath();
+                // Горизонтальна риска
+                latticeCtx.moveTo(ion.x - 3, ion.y);
+                latticeCtx.lineTo(ion.x + 3, ion.y);
+                // Вертикальна риска
+                latticeCtx.moveTo(ion.x, ion.y - 3);
+                latticeCtx.lineTo(ion.x, ion.y + 3);
+                latticeCtx.stroke();
+            });
+
+            // 2. Рух електронів провідності
+            let collisionOccurredInThisFrame = 0;
+
+            latticeCtx.fillStyle = '#60a5fa';
+            conductionElectrons.forEach(e => {
+                // Електрони рухаються зліва направо
+                e.x += e.speedX;
+                e.y += e.speedY;
+
+                // Якщо вилетів за правий край, з'являється зліва
+                if (e.x > latticeCanvas.width) {
+                    e.x = 0;
+                    e.y = 15 + Math.random() * (latticeCanvas.height - 30);
+                    e.speedX = 2 + Math.random() * 2;
+                    e.speedY = (Math.random() - 0.5) * 1.5;
+                }
+
+                // Відображення стінок зверху та знизу провідника
+                if (e.y < 5 || e.y > latticeCanvas.height - 5) {
+                    e.speedY = -e.speedY;
+                }
+
+                if (e.collisionCooldown > 0) e.collisionCooldown--;
+
+                // Перевірка зіткнень з іонами ґратки
+                ions.forEach(ion => {
+                    const dist = Math.hypot(e.x - ion.x, e.y - ion.y);
+                    // Радіус зіткнення зростає при збільшенні коливань іона
+                    const collisionBoundary = 10 + vibrationAmplitude;
+
+                    if (dist < collisionBoundary && e.collisionCooldown === 0) {
+                        // Відбулося зіткнення!
+                        e.speedX *= 0.7; // Сповільнення (електричний опір)
+                        e.speedY += (Math.random() - 0.5) * 3; // Розсіювання у випадковому напрямку
+                        e.collisionCooldown = 15; // Запобігання повторному спрацьовуванню
+                        collisionOccurredInThisFrame++;
+
+                        // Спалах зіткнення
+                        latticeCtx.strokeStyle = 'rgba(253, 224, 71, 0.6)';
+                        latticeCtx.lineWidth = 2;
+                        latticeCtx.beginPath();
+                        latticeCtx.arc(e.x, e.y, 8, 0, Math.PI*2);
+                        latticeCtx.stroke();
+                    }
+                });
+
+                // Малюємо електрон (синє коло) та невеликий шлейф руху
+                latticeCtx.beginPath();
+                latticeCtx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+                latticeCtx.fill();
+
+                // Шлейф
+                latticeCtx.fillStyle = 'rgba(96, 165, 250, 0.3)';
+                latticeCtx.beginPath();
+                latticeCtx.arc(e.x - e.speedX * 1.5, e.y - e.speedY * 1.5, e.size * 0.7, 0, Math.PI * 2);
+                latticeCtx.fill();
+                latticeCtx.fillStyle = '#60a5fa';
+            });
+
+            // Накопичуємо та показуємо зіткнення
+            totalCollisions += collisionOccurredInThisFrame;
+            collisionResetCounter++;
+            if (collisionResetCounter > 30) { // Оновлюємо лічильник раз на 30 кадрів
+                document.getElementById('collisions-display').textContent = Math.round(totalCollisions * 2);
+                totalCollisions = 0;
+                collisionResetCounter = 0;
+            }
+
+            // Напис-вказівник Напруги / Поля
+            latticeCtx.fillStyle = '#94a3b8';
+            latticeCtx.font = 'bold 10px sans-serif';
+            latticeCtx.fillText("Електричне поле (E) ➔", 20, 20);
+
+            latticeAnimationId = requestAnimationFrame(animateLattice);
+        }
+    </script>
+</body>
+</html>
