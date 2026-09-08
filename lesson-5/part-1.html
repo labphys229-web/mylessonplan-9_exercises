@@ -241,8 +241,8 @@
             document.getElementById('resAlpha').textContent = `${reg.alpha.toFixed(5)} °C⁻¹`;
             document.getElementById('resEquation').textContent = `R(t) = ${reg.slope.toFixed(6)} · t + ${reg.R0.toFixed(4)}`;
 
-            // Генерація точок лінії тренду
-            const minT = Math.min(...tVals) - 5;
+            // Початок лінії тренду від 0 °C до максимальної температури + 5 °C
+            const minT = 0;
             const maxT = Math.max(...tVals) + 5;
             const trendT = [];
             const trendR = [];
@@ -252,7 +252,7 @@
                 trendR.push(reg.slope * t + reg.R0);
             }
 
-            // Побудова Plotly графіка
+            // Експериментальні точки
             const traceExp = {
                 x: tVals,
                 y: rVals,
@@ -263,6 +263,7 @@
                 hovertemplate: '<b>[Дослід]</b><br>Температура: %{x} °C<br>Опір: %{y:.3f} Ом<extra></extra>'
             };
 
+            // Лінія тренду (з починанням від 0 °C)
             const traceTrend = {
                 x: trendT,
                 y: trendR,
@@ -271,6 +272,20 @@
                 name: 'Лінія тренду R(t)',
                 line: { color: '#38bdf8', width: 2.5 },
                 hovertemplate: '<b>[Тренд R(t)]</b><br>Температура: %{x:.1f} °C<br>Опір: %{y:.4f} Ом<extra></extra>'
+            };
+
+            // Окрема точка для R0 при 0 °C
+            const traceR0 = {
+                x: [0],
+                y: [reg.R0],
+                mode: 'markers+text',
+                type: 'scatter',
+                name: 'Опір R₀ (0 °C)',
+                marker: { color: '#f59e0b', size: 12, symbol: 'star' },
+                text: [`  R₀ = ${reg.R0.toFixed(4)} Ом`],
+                textposition: 'top right',
+                textfont: { color: '#f59e0b', size: 13 },
+                hovertemplate: '<b>[Екстраполяція]</b><br>Температура: 0 °C<br>Опір R₀: %{y:.4f} Ом<extra></extra>'
             };
 
             const layout = {
@@ -284,7 +299,9 @@
                     title: 'Температура t, °C',
                     color: '#94a3b8',
                     gridcolor: '#334155',
-                    zerolinecolor: '#475569'
+                    zerolinecolor: '#f8fafc',
+                    zerolinewidth: 2,
+                    range: [-2, maxT] // Показуємо від 0 °C
                 },
                 yaxis: {
                     title: 'Опір R, Ом',
@@ -301,7 +318,7 @@
                 margin: { l: 60, r: 30, t: 50, b: 50 }
             };
 
-            Plotly.newPlot('plot', [traceTrend, traceExp], layout, { responsive: true });
+            Plotly.newPlot('plot', [traceTrend, traceExp, traceR0], layout, { responsive: true });
 
             if (window.MathJax && MathJax.typeset) {
                 MathJax.typeset();
