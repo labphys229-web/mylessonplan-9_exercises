@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: Застосування електролізу в техніці та екології</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        button, .btn-touch {
+            touch-action: manipulation;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.98); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .animate-pop {
+            animation: pop 0.25s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between selection:bg-blue-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 text-white p-2 rounded-xl shadow-md">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-900 text-base sm:text-lg leading-tight">Застосування електролізу</h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">Фізика та техніка • Інтерактивний тест</p>
+                </div>
+            </div>
+
+            <!-- Sound toggle button -->
+            <button id="soundToggleBtn" onclick="toggleSound()" class="flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition duration-150">
+                <svg id="soundOnIcon" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"/>
+                </svg>
+                <svg id="soundOffIcon" class="w-5 h-5 text-slate-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-dasharray="2 2"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                </svg>
+                <span id="soundStatusText" class="text-xs font-semibold">Звук УВІМК</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-3xl w-full mx-auto p-4 sm:p-6 flex-grow flex flex-col justify-center">
+
+        <!-- Quiz Container Card -->
+        <div id="quizCard" class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden transition-all duration-300">
+            
+            <!-- Progress Bar & Question Counter -->
+            <div class="bg-slate-50 border-b border-slate-100 p-4 sm:p-5">
+                <div class="flex justify-between items-center mb-2">
+                    <span id="questionCounter" class="text-xs sm:text-sm font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
+                        Запитання 1 з 16
+                    </span>
+                    <span id="attemptBadge" class="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        <span>Спроба: <strong id="attemptText" class="font-bold">1 / 2</strong></span>
+                    </span>
+                </div>
+                <!-- Progress Line -->
+                <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                    <div id="progressBar" class="bg-blue-600 h-full transition-all duration-300 ease-out" style="width: 6.25%;"></div>
+                </div>
+            </div>
+
+            <!-- Question Content -->
+            <div class="p-5 sm:p-8">
+                <h2 id="questionText" class="text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-6">
+                    Завантаження запитання...
+                </h2>
+
+                <!-- Options List -->
+                <div id="optionsContainer" class="space-y-3 mb-6">
+                    <!-- Dynamic Options JS Injection -->
+                </div>
+
+                <!-- Feedback Banner -->
+                <div id="feedbackBox" class="hidden p-4 rounded-xl border mb-6 text-sm sm:text-base leading-relaxed transition-all duration-200">
+                    <!-- Dynamic Feedback Message -->
+                </div>
+
+                <!-- Footer Navigation Buttons -->
+                <div class="flex justify-end pt-2 border-t border-slate-100">
+                    <button id="nextBtn" onclick="nextQuestion()" disabled class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl transition duration-200 opacity-50 cursor-not-allowed flex items-center space-x-2 shadow-md">
+                        <span>Наступне запитання</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results View (Hidden Initially) -->
+        <div id="resultsCard" class="hidden bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden p-6 sm:p-8 text-center animate-pop">
+            <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">Тест завершено!</h2>
+            <p class="text-slate-600 text-sm sm:text-base mb-6">Ось ваші підсумкові результати з теми «Застосування електролізу»</p>
+
+            <!-- Score Stats Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div class="bg-blue-50/70 border border-blue-100 p-4 rounded-2xl">
+                    <div class="text-3xl font-black text-blue-600" id="finalScoreGrade">12</div>
+                    <div class="text-xs uppercase tracking-wider font-semibold text-blue-800 mt-1">Оцінка (12 балів)</div>
+                </div>
+                <div class="bg-emerald-50/70 border border-emerald-100 p-4 rounded-2xl">
+                    <div class="text-3xl font-black text-emerald-600" id="finalPercent">100%</div>
+                    <div class="text-xs uppercase tracking-wider font-semibold text-emerald-800 mt-1">Правильність</div>
+                </div>
+                <div class="bg-amber-50/70 border border-amber-100 p-4 rounded-2xl">
+                    <div class="text-3xl font-black text-amber-600" id="firstAttemptCount">16/16</div>
+                    <div class="text-xs uppercase tracking-wider font-semibold text-amber-800 mt-1">З 1-ї спроби</div>
+                </div>
+            </div>
+
+            <!-- Detail Breakdown Accordion/List -->
+            <div class="text-left mb-8">
+                <h3 class="font-bold text-slate-800 mb-3 text-base">Огляд відповідей:</h3>
+                <div id="resultsList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <!-- Dynamic Injection -->
+                </div>
+            </div>
+
+            <button onclick="restartQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg transition duration-200 transform hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto inline-flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span>Пройти тест знову</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-400 border-t border-slate-200 bg-white">
+        Навчальний інтерактивний тест з фізики • Застосування електролізу
+    </footer>
+
+    <script>
+        // Questions Data Array (Strictly 16 questions provided)
+        const quizData = [
+            {
+                id: 1,
+                question: "1. Як називають спосіб очищення металів від домішок за допомогою електролізу?",
+                options: ["А) Дисоціація", "Б) Рафінування", "В) Фільтрація", "Г) Електроекстракція"],
+                correctIndex: 1, // Б
+                explanation: "<strong>Рафінування</strong> — це спосіб очищення металів (наприклад, міді) від домішок за допомогою електролізу."
+            },
+            {
+                id: 2,
+                question: "2. Що використовують як анод під час електролітичного очищення міді?",
+                options: ["А) Тонку пластинку чистої міді", "Б) Графітовий електрод", "В) Товсту пластинку неочищеної міді", "Г) Пластинку з нержавіючої сталі"],
+                correctIndex: 2, // В
+                explanation: "Як анод (+) використовують <strong>товсту пластинку неочищеної міді</strong>, яка під час електролізу поступово розчиняється."
+            },
+            {
+                id: 3,
+                question: "3. Що відбувається з домішками, які містилися в неочищеному аноді?",
+                options: ["А) Вони переносяться разом із міддю та осідають на катоді", "Б) Вони повністю випаровуються під дією струму", "В) Вони осідають на дні ванни або залишаються в розчині", "Г) Вони перетворюються на молекули купрум(II) сульфату"],
+                correctIndex: 2, // В
+                explanation: "Домішки шламу <strong>осідають на дні ванни</strong> або залишаються в розчині електроліту, не осідаючи на чистому катоді."
+            },
+            {
+                id: 4,
+                question: "4. Яка пластинка слугує катодом і що на ній відбувається під час процесу?",
+                options: ["А) Товста пластинка неочищеної міді; вона розчиняється", "Б) Тонка пластинка чистої міді; на ній осідають йони чистої міді", "В) Тонка пластинка чистої міді; на ній збираються сульфат-іони", "Г) Залізна пластинка; на ній осідають домішки"],
+                correctIndex: 1, // Б
+                explanation: "Катодом (-) слугує <strong>тонка пластинка чистої міді</strong>, на якій з розчину осідають йони чистої міді."
+            },
+            {
+                id: 5,
+                question: "5. Яку роль відіграє сам виріб, на який хочуть нанести шар металу в процесі гальваностегії?",
+                options: ["А) Він слугує катодом (-)", "Б) Він слугує анодом (+)", "В) Він виконує роль електроліту", "Г) Він залишається нейтральним і не під'єднується до струму"],
+                correctIndex: 0, // А
+                explanation: "Деталь або виріб обов'язково приєднують до негативного полюса джерела (катод), щоб позитивно заряджені йони металу осідали на ньому."
+            },
+            {
+                id: 6,
+                question: "6. Як називають спосіб покриття виробу тонким шаром металів за допомогою електролізу?",
+                options: ["А) Гальванопластика", "Б) Рафінування", "В) Гальваностегія", "Г) Електроекстракція"],
+                correctIndex: 2, // В
+                explanation: "<strong>Гальваностегія</strong> — це процес нанесення тонкого міцного шару металу на поверхню виробу для захисту від корозії чи для краси."
+            },
+            {
+                id: 7,
+                question: "7. Що використовують як анод під час покриття виробу сріблом (як показано на рис. 3.3)?",
+                options: ["А) Графітовий стрижень", "Б) Пластинку з металу, яким покривають виріб (срібла)", "В) Залізну пластинку для збору домішок", "Г) Саму чашку, яку потрібно посріблити"],
+                correctIndex: 1, // Б
+                explanation: "Як анод використовують <strong>пластинку з того металу, яким покривають виріб</strong> (у даному випадку срібну пластинку)."
+            },
+            {
+                id: 8,
+                question: "8. Яку основну мету або функцію НЕ виконує металевий шар, нанесений за допомогою гальваностегії?",
+                options: ["А) Захист виробу від корозії", "Б) Збільшення міцності виробу", "В) Перетворення виробу на декоративну прикрасу", "Г) Повне розчинення виробу в електроліті"],
+                correctIndex: 3, // Г
+                explanation: "Гальваностегія НЕ покликана розчиняти сам виріб; навпаки, вона наносить захисний чи декоративний шар на його поверхню."
+            },
+            {
+                id: 9,
+                question: "9. Що таке гальванопластика згідно з текстом?",
+                options: ["А) Спосіб покриття виробів тонким захисним шаром металу", "Б) Спосіб отримання точних копій рельєфних виробів за допомогою електролізу", "В) Процес очищення металів від сторонніх домішок", "Г) Метод швидкого розчинення металевих анодів під дією струму"],
+                correctIndex: 1, // Б
+                explanation: "<strong>Гальванопластика</strong> — це отримання точних товстих металевих копій рельєфних предметів за допомогою електролізу."
+            },
+            {
+                id: 10,
+                question: "10. Чим покривають восковий зліпок перед зануренням в електроліт, щоб його поверхня проводила струм?",
+                options: ["А) Тонким шаром графіту", "Б) Розчином аргентум нітрату", "В) Товстим шаром чистого воску", "Г) Кислотним електролітом"],
+                correctIndex: 0, // А
+                explanation: "Віск не проводить струм, тому зліпок покривають <strong>тонким шаром графітового порошку</strong>, який є хорошим провідником."
+            },
+            {
+                id: 11,
+                question: "11. Яку роль відіграє восковий зліпок у ванні під час процесу гальванопластики?",
+                options: ["А) Він слугує анодом (+)", "Б) Він є нейтральним середовищем", "В) Він повністю розчиняється в електроліті", "Г) Він слугує катодом (-)"],
+                correctIndex: 3, // Г
+                explanation: "Вкритий графітом зліпок під'єднують до негативного полюса (катод), щоб на ньому осідав метал з розчину."
+            },
+            {
+                id: 12,
+                question: "12. Які ще сфери застосування електролізу в техніці згадуються в кінці тексту?",
+                options: ["А) Виплавка чавуну та сталі", "Б) Отримання водню, зарядження та розрядження акумуляторів", "В) Створення штучних кристалів графіту", "Г) Виробництво пластикових деталей для техніки"],
+                correctIndex: 1, // Б
+                explanation: "Електроліз також застосовують для <strong>отримання водню та під час заряджання й розряджання акумуляторів</strong>."
+            },
+            {
+                id: 13,
+                question: "13. Яку важливу перевагу має водень порівняно з природним газом, нафтою чи вугіллям згідно з текстом?",
+                options: ["А) Його питома теплота згоряння в кілька разів вища", "Б) Для його використання не потрібні спеціальні ємності", "В) Він є найдешевшим викопним ресурсом на планеті", "Г) Його можна видобувати безпосередньо з надр Землі"],
+                correctIndex: 0, // А
+                explanation: "Питома теплота згоряння водню становить близько 120-140 МДж/кг, що в кілька разів перевищує показники вугілля чи газу."
+            },
+            {
+                id: 14,
+                question: "14. Чому водень вважають екологічно чистим паливом майбутнього?",
+                options: ["А) Під час його згоряння виділяється багато чадного газу", "Б) Під час його згоряння не утворюється вуглекислий газ", "В) Його молекули здатні самостійно очищувати атмосферу", "Г) Він повністю замінює використання відновлюваних джерел енергії"],
+                correctIndex: 1, // Б
+                explanation: "При згорянні водню в кисні утворюється лише чиста вода (водяна пара) і <strong>не виділяється вуглекислий газ (CO₂)</strong>."
+            },
+            {
+                id: 15,
+                question: "15. Яким шляхом отримують водень з води відповідно до тексту в параграфі?",
+                options: ["А) Шляхом механічного очищення та фільтрації", "Б) Шляхом тривалого кип'ятіння під високим тиском", "В) Шляхом поділу води на водень і кисень за допомогою електролізу", "Г) Шляхом хімічної реакції води з природним газом"],
+                correctIndex: 2, // В
+                explanation: "Водень високої чистоти з води виділяють <strong>шляхом її розкладу за допомогою електролізу</strong>."
+            },
+            {
+                id: 16,
+                question: "16. Що таке «зелений» водень?",
+                options: ["А) Водень, який фарбують у зелений колір для маркування безпеки", "Б) Паливо, отримане виключно з морських водоростей та рослин", "В) Водень, який виділяється під час згоряння вугілля та нафти", "Г) Водень, отриманий за допомогою відновлюваних джерел енергії, виробництво якого не шкодить довкіллю"],
+                correctIndex: 3, // Г
+                explanation: "<strong>«Зелений» водень</strong> — це водень, добутий електролізом води з використанням енергії вітру, сонця чи гідроелектростанцій."
+            }
+        ];
+
+        // Application State
+        let currentQuestionIndex = 0;
+        let attemptsLeft = 2; // 2 attempts per question
+        let pointsEarned = 0; // Total points earned
+        let firstAttemptSuccesses = 0; // Counter for 1st attempt correct answers
+        let soundEnabled = true;
+        let questionHistory = []; // Tracks user performance per question
+
+        // Web Audio API Synthesizer
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // Global touch unlock for Mobile Safari (iOS) audio restrictions
+        document.addEventListener('touchstart', function unlockAudioOnMobile() {
+            if (!audioCtx) {
+                getAudioContext();
+            } else if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }, { once: true });
+
+        // Play Synthesized Sound Effects
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+
+                if (type === 'correct') {
+                    // Pleasant ascending chord (C5 -> E5 -> G5 -> C6)
+                    const freqs = [523.25, 659.25, 783.99, 1046.50];
+                    freqs.forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        gain.gain.setValueAtTime(0.15, now + idx * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + idx * 0.08);
+                        osc.stop(now + idx * 0.08 + 0.35);
+                    });
+                } else if (type === 'wrong-retry') {
+                    // Soft dual warning tone (E4 -> C4)
+                    const freqs = [329.63, 261.63];
+                    freqs.forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+                        gain.gain.setValueAtTime(0.2, now + idx * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.2);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + idx * 0.1);
+                        osc.stop(now + idx * 0.1 + 0.25);
+                    });
+                } else if (type === 'wrong-failed') {
+                    // Descending sad tone (Eb4 -> C4 -> G3)
+                    const freqs = [311.13, 261.63, 196.00];
+                    freqs.forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+                        gain.gain.setValueAtTime(0.15, now + idx * 0.12);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.25);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + idx * 0.12);
+                        osc.stop(now + idx * 0.12 + 0.3);
+                    });
+                } else if (type === 'complete') {
+                    // Victory fanfare (C5, G5, E5, C6)
+                    const notes = [
+                        { f: 523.25, t: 0, d: 0.15 },
+                        { f: 783.99, t: 0.15, d: 0.15 },
+                        { f: 659.25, t: 0.30, d: 0.15 },
+                        { f: 1046.50, t: 0.45, d: 0.5 }
+                    ];
+                    notes.forEach(n => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(n.f, now + n.t);
+                        gain.gain.setValueAtTime(0.2, now + n.t);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + n.t);
+                        osc.stop(now + n.t + n.d + 0.05);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio play blocked or unsupported", e);
+            }
+        }
+
+        // Sound Toggle Handler
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const soundOnIcon = document.getElementById('soundOnIcon');
+            const soundOffIcon = document.getElementById('soundOffIcon');
+            const statusText = document.getElementById('soundStatusText');
+
+            if (soundEnabled) {
+                soundOnIcon.classList.remove('hidden');
+                soundOffIcon.classList.add('hidden');
+                statusText.innerText = 'Звук УВІМК';
+                playSound('correct');
+            } else {
+                soundOnIcon.classList.add('hidden');
+                soundOffIcon.classList.remove('hidden');
+                statusText.innerText = 'Звук ВИМК';
+            }
+        }
+
+        // Render Question Function
+        function renderQuestion() {
+            const currentQ = quizData[currentQuestionIndex];
+            attemptsLeft = 2; // Reset attempts to 2
+
+            // Update UI Counters
+            document.getElementById('questionCounter').innerText = `Запитання ${currentQuestionIndex + 1} з ${quizData.length}`;
+            document.getElementById('attemptText').innerText = `${attemptsLeft} / 2`;
+            document.getElementById('attemptBadge').className = "text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 flex items-center gap-1";
+
+            const progressPct = ((currentQuestionIndex + 1) / quizData.length) * 100;
+            document.getElementById('progressBar').style.width = `${progressPct}%`;
+
+            // Question Text
+            document.getElementById('questionText').innerText = currentQ.question;
+
+            // Options Rendering
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            currentQ.options.forEach((optText, index) => {
+                const btn = document.createElement('button');
+                btn.id = `opt-btn-${index}`;
+                btn.onclick = () => selectOption(index);
+                btn.className = `w-full text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-blue-400 hover:bg-blue-50/50 active:scale-[0.99] transition-all duration-200 font-medium text-slate-700 flex items-center justify-between group shadow-sm select-none touch-manipulation`;
+                
+                btn.innerHTML = `
+                    <span class="text-sm sm:text-base leading-snug">${optText}</span>
+                    <span id="opt-icon-${index}" class="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center shrink-0 ml-3 text-xs font-bold text-slate-400 group-hover:border-blue-500 group-hover:text-blue-600 transition duration-150">
+                        ${String.fromCharCode(65 + index)}
+                    </span>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Reset Feedback and Next Button
+            const feedbackBox = document.getElementById('feedbackBox');
+            feedbackBox.className = 'hidden p-4 rounded-xl border mb-6 text-sm sm:text-base leading-relaxed';
+            feedbackBox.innerHTML = '';
+
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = true;
+            nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            nextBtn.classList.remove('hover:bg-blue-700');
+        }
+
+        // Option Click Logic
+        function selectOption(selectedIndex) {
+            const currentQ = quizData[currentQuestionIndex];
+            const selectedBtn = document.getElementById(`opt-btn-${selectedIndex}`);
+            const selectedIcon = document.getElementById(`opt-icon-${selectedIndex}`);
+            const feedbackBox = document.getElementById('feedbackBox');
+            const isCorrect = (selectedIndex === currentQ.correctIndex);
+
+            // If correct on current attempt
+            if (isCorrect) {
+                playSound('correct');
+
+                // Style option button as correct
+                selectedBtn.className = `w-full text-left p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-900 font-semibold flex items-center justify-between shadow-sm animate-pop`;
+                selectedIcon.className = `w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 ml-3 text-xs font-bold shadow`;
+                selectedIcon.innerHTML = `✓`;
+
+                // Calculate Score Points
+                if (attemptsLeft === 2) {
+                    pointsEarned += 1.0; // Full 1 point for 1st attempt
+                    firstAttemptSuccesses++;
+                    questionHistory.push({ qId: currentQ.id, status: 'first-try', question: currentQ.question });
+                } else {
+                    pointsEarned += 0.5; // Partial 0.5 points for 2nd attempt
+                    questionHistory.push({ qId: currentQ.id, status: 'second-try', question: currentQ.question });
+                }
+
+                // Show Correct Feedback
+                feedbackBox.className = 'p-4 rounded-xl border border-emerald-200 bg-emerald-50/80 text-emerald-900 mb-6 text-sm sm:text-base block animate-pop';
+                feedbackBox.innerHTML = `
+                    <div class="flex items-start space-x-2">
+                        <span class="text-emerald-600 font-bold text-lg">✓</span>
+                        <div>
+                            <p class="font-bold text-emerald-800">Відмінно! Правильна відповідь.</p>
+                            <p class="mt-1 text-slate-700 font-normal">${currentQ.explanation}</p>
+                        </div>
+                    </div>
+                `;
+
+                disableAllOptions();
+                enableNextButton();
+
+            } else {
+                // Incorrect choice
+                attemptsLeft--;
+                document.getElementById('attemptText').innerText = `${attemptsLeft} / 2`;
+
+                if (attemptsLeft === 1) {
+                    // FIRST WRONG ATTEMPT -> Give retry!
+                    playSound('wrong-retry');
+
+                    // Disable only the clicked wrong option
+                    selectedBtn.disabled = true;
+                    selectedBtn.className = `w-full text-left p-4 rounded-xl border-2 border-rose-300 bg-rose-50 text-rose-800 font-medium opacity-80 cursor-not-allowed flex items-center justify-between animate-shake`;
+                    selectedIcon.className = `w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center shrink-0 ml-3 text-xs font-bold`;
+                    selectedIcon.innerHTML = `✕`;
+
+                    // Update attempt badge style
+                    document.getElementById('attemptBadge').className = "text-xs font-semibold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200 flex items-center gap-1 animate-pulse";
+
+                    // Display hint box to try second attempt
+                    feedbackBox.className = 'p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-900 mb-6 text-sm sm:text-base block animate-pop';
+                    feedbackBox.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <span class="text-amber-600 font-bold text-lg">⚠️</span>
+                            <div>
+                                <p class="font-bold text-amber-900">Невірно! Спробуйте ще раз.</p>
+                                <p class="text-xs sm:text-sm text-amber-800">У вас залишилася ще 1 спроба для цього запитання.</p>
+                            </div>
+                        </div>
+                    `;
+
+                } else {
+                    // SECOND WRONG ATTEMPT -> Failed question
+                    playSound('wrong-failed');
+
+                    selectedBtn.disabled = true;
+                    selectedBtn.className = `w-full text-left p-4 rounded-xl border-2 border-rose-400 bg-rose-50 text-rose-900 font-medium flex items-center justify-between animate-shake`;
+                    selectedIcon.className = `w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center shrink-0 ml-3 text-xs font-bold`;
+                    selectedIcon.innerHTML = `✕`;
+
+                    // Highlight the correct answer in green
+                    const correctBtn = document.getElementById(`opt-btn-${currentQ.correctIndex}`);
+                    const correctIcon = document.getElementById(`opt-icon-${currentQ.correctIndex}`);
+                    correctBtn.className = `w-full text-left p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-900 font-semibold flex items-center justify-between shadow-sm`;
+                    correctIcon.className = `w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 ml-3 text-xs font-bold`;
+                    correctIcon.innerHTML = `✓`;
+
+                    questionHistory.push({ qId: currentQ.id, status: 'failed', question: currentQ.question });
+
+                    // Show Explanation
+                    feedbackBox.className = 'p-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 mb-6 text-sm sm:text-base block animate-pop';
+                    feedbackBox.innerHTML = `
+                        <div class="flex items-start space-x-2">
+                            <span class="text-rose-500 font-bold text-lg">✕</span>
+                            <div>
+                                <p class="font-bold text-slate-900">Спроби вичерпано.</p>
+                                <p class="mt-1 text-slate-700">${currentQ.explanation}</p>
+                            </div>
+                        </div>
+                    `;
+
+                    disableAllOptions();
+                    enableNextButton();
+                }
+            }
+        }
+
+        // Helper: Disable all options
+        function disableAllOptions() {
+            const currentQ = quizData[currentQuestionIndex];
+            currentQ.options.forEach((_, idx) => {
+                const btn = document.getElementById(`opt-btn-${idx}`);
+                if (btn) btn.disabled = true;
+            });
+        }
+
+        // Helper: Enable Next Question button
+        function enableNextButton() {
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            nextBtn.classList.add('hover:bg-blue-700');
+        }
+
+        // Navigation: Next Question
+        function nextQuestion() {
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Show Final Results Screen
+        function showResults() {
+            playSound('complete');
+
+            document.getElementById('quizCard').classList.add('hidden');
+            const resultsCard = document.getElementById('resultsCard');
+            resultsCard.classList.remove('hidden');
+
+            // Calculate Score based on 12-point scale and percentage
+            const totalQuestions = quizData.length; // 16
+            const maxPoints = totalQuestions; // 16
+            const accuracyPct = Math.round((pointsEarned / maxPoints) * 100);
+
+            // Calculate 12-point Ukrainian school grade scale
+            let grade12 = Math.round((pointsEarned / maxPoints) * 12);
+            if (pointsEarned > 0 && grade12 === 0) grade12 = 1;
+
+            document.getElementById('finalScoreGrade').innerText = `${grade12} / 12`;
+            document.getElementById('finalPercent').innerText = `${accuracyPct}%`;
+            document.getElementById('firstAttemptCount').innerText = `${firstAttemptSuccesses}/${totalQuestions}`;
+
+            // Render breakdown list
+            const resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = '';
+
+            questionHistory.forEach((item, i) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `p-3 rounded-lg border text-xs sm:text-sm flex items-center justify-between ${
+                    item.status === 'first-try' ? 'bg-emerald-50 border-emerald-200 text-emerald-900' :
+                    item.status === 'second-try' ? 'bg-amber-50 border-amber-200 text-amber-900' :
+                    'bg-rose-50 border-rose-200 text-rose-900'
+                }`;
+
+                const statusLabel = item.status === 'first-try' ? '✓ З 1-ї спроби (1.0 б)' :
+                                    item.status === 'second-try' ? '⚠️ З 2-ї спроби (0.5 б)' :
+                                    '✕ Не складено (0 б)';
+
+                itemDiv.innerHTML = `
+                    <span class="font-medium truncate max-w-[70%]">${i + 1}. ${quizData[i].question.replace(/^\d+\.\s*/, '')}</span>
+                    <span class="font-bold shrink-0 text-xs px-2 py-0.5 rounded-full ${
+                        item.status === 'first-try' ? 'bg-emerald-200/60 text-emerald-900' :
+                        item.status === 'second-try' ? 'bg-amber-200/60 text-amber-900' :
+                        'bg-rose-200/60 text-rose-900'
+                    }">${statusLabel}</span>
+                `;
+                resultsList.appendChild(itemDiv);
+            });
+        }
+
+        // Restart Quiz
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            pointsEarned = 0;
+            firstAttemptSuccesses = 0;
+            questionHistory = [];
+
+            document.getElementById('resultsCard').classList.add('hidden');
+            document.getElementById('quizCard').classList.remove('hidden');
+
+            renderQuestion();
+        }
+
+        // Window Load Initializer
+        window.onload = function() {
+            renderQuestion();
+        };
+    </script>
+</body>
+</html>
